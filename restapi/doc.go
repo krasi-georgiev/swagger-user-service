@@ -7,8 +7,8 @@ a service for user management.
 
     Schemes:
       http
-    Host: localhost:8080
-    BasePath: /v1/account/
+    Host: localhost
+    BasePath: /v1/user/
     Version: 0.0.1
 
     Consumes:

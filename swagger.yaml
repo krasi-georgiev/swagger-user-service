@@ -4,8 +4,7 @@ info:
     a service for user management.
   version: 0.0.1
   title: User Management
-host: "localhost:8080"
-basePath: /v1/account/
+basePath: /v1/user/
 tags:
   - name: users
     description: user management - authenticate,create , delete, reset password
@@ -17,17 +16,15 @@ paths:
       tags:
         - users
       summary: get an swt token to access protected endpoints
-      description: ''
       consumes:
         - application/json
       produces:
         - application/json
       parameters:
-        - name: body
-          in: body
-          required: true
+        - in: body
+          name: body
           schema:
-            $ref: "#/definitions/Login"
+            $ref: "#/definitions/Profile"
       responses:
         200:
           description: A token object.
@@ -40,9 +37,64 @@ paths:
           description: A user not found.
         default:
           description: Unexpected error
-
+  /create:
+    post:
+      security:
+        - swtAuth: []
+      tags:
+        - users
+      summary: creates a new user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: "#/definitions/Profile"
+      responses:
+        200:
+          description: An user id of the created user.
+          schema:
+            type: object
+            properties:
+              idProfile:
+                type: string
+        401:
+           $ref: "#/responses/UnauthorizedError"
+        default:
+          description: Unexpected error
+  /password:
+    post:
+      security:
+        - swtAuth: []
+      tags:
+        - users
+      summary: change or reset an user password
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: "#/definitions/Profile"
+      responses:
+        200:
+          description: shows a message if the password was set or sent with an email reminder.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+        401:
+           $ref: "#/responses/UnauthorizedError"
+        default:
+          description: Unexpected error
 definitions:
-  Login:
+  Profile:
       type: "object"
       required:
       - "email"
@@ -52,3 +104,14 @@ definitions:
           type: "string"
         pass:
           type: "string"
+securityDefinitions:
+   swtAuth:
+     type: apiKey
+     in: header
+     name: x-token
+responses:
+  UnauthorizedError:
+    description: SWT key is missing or invalid
+    headers:
+      WWW_Authenticate:
+        type: string

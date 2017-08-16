@@ -58,6 +58,15 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	// Applies when the "x-token" header is set
+	api.SwtAuthAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (swtAuth) x-token from header param [x-token] has not yet been implemented")
+	}
+
+	api.UsersPostCreateHandler = users.PostCreateHandlerFunc(func(params users.PostCreateParams, principal interface{}) middleware.Responder {
+		return middleware.NotImplemented("operation users.PostCreate has not yet been implemented")
+	})
+
 	api.UsersPostLoginHandler = users.PostLoginHandlerFunc(func(params users.PostLoginParams) middleware.Responder {
 		token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 			"exp": time.Now().Add(time.Hour * 72).Unix(),

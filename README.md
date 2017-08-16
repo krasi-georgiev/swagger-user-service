@@ -9,6 +9,8 @@ openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
 			/create
 			/pass , reset , update(PATCH)
 
+JWT scopes
+
 TODO:
 	user registration
 

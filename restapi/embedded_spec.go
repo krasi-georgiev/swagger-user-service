@@ -23,9 +23,55 @@ func init() {
     "title": "User Management",
     "version": "0.0.1"
   },
-  "host": "localhost:8080",
-  "basePath": "/v1/account/",
+  "basePath": "/v1/user/",
   "paths": {
+    "/create": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "creates a new user",
+        "security": [
+          {
+            "swtAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An user id of the created user.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "idProfile": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      }
+    },
     "/login": {
       "post": {
         "consumes": [
@@ -42,9 +88,8 @@ func init() {
           {
             "name": "body",
             "in": "body",
-            "required": true,
             "schema": {
-              "$ref": "#/definitions/Login"
+              "$ref": "#/definitions/Profile"
             }
           }
         ],
@@ -68,10 +113,57 @@ func init() {
           }
         }
       }
+    },
+    "/password": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "change or reset an user password",
+        "security": [
+          {
+            "swtAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "shows a message if the password was set or sent with an email reminder.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "description": "Unexpected error"
+          }
+        }
+      }
     }
   },
   "definitions": {
-    "Login": {
+    "Profile": {
       "type": "object",
       "required": [
         "email",
@@ -85,6 +177,23 @@ func init() {
           "type": "string"
         }
       }
+    }
+  },
+  "responses": {
+    "UnauthorizedError": {
+      "description": "SWT key is missing or invalid",
+      "headers": {
+        "WWW_Authenticate": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "swtAuth": {
+      "type": "apiKey",
+      "name": "x-token",
+      "in": "header"
     }
   },
   "tags": [

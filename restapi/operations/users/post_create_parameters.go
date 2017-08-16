@@ -15,18 +15,18 @@ import (
 	"github.com/choicehealth/user-service/models"
 )
 
-// NewPostLoginParams creates a new PostLoginParams object
+// NewPostCreateParams creates a new PostCreateParams object
 // with the default values initialized.
-func NewPostLoginParams() PostLoginParams {
+func NewPostCreateParams() PostCreateParams {
 	var ()
-	return PostLoginParams{}
+	return PostCreateParams{}
 }
 
-// PostLoginParams contains all the bound params for the post login operation
+// PostCreateParams contains all the bound params for the post create operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostLogin
-type PostLoginParams struct {
+// swagger:parameters PostCreate
+type PostCreateParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request
@@ -39,7 +39,7 @@ type PostLoginParams struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *PostLoginParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *PostCreateParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
 

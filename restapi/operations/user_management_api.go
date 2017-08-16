@@ -10,8 +10,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-openapi/runtime/security"
-
 	errors "github.com/go-openapi/errors"
 	loads "github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
@@ -21,6 +19,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/choicehealth/user-service/restapi/operations/users"
+	"github.com/go-openapi/runtime/security"
 )
 
 // NewUserManagementAPI creates a new UserManagement instance
@@ -38,9 +37,20 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
+		UsersPostCreateHandler: users.PostCreateHandlerFunc(func(params users.PostCreateParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation UsersPostCreate has not yet been implemented")
+		}),
 		UsersPostLoginHandler: users.PostLoginHandlerFunc(func(params users.PostLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersPostLogin has not yet been implemented")
 		}),
+		UsersPostPasswordHandler: users.PostPasswordHandlerFunc(func(params users.PostPasswordParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation UsersPostPassword has not yet been implemented")
+		}),
+
+		// Applies when the "x-token" header is set
+		SwtAuthAuth: func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (swtAuth) x-token from header param [x-token] has not yet been implemented")
+		},
 	}
 }
 
@@ -70,8 +80,16 @@ type UserManagementAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
+	// SwtAuthAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key x-token provided in the header
+	SwtAuthAuth func(string) (interface{}, error)
+
+	// UsersPostCreateHandler sets the operation handler for the post create operation
+	UsersPostCreateHandler users.PostCreateHandler
 	// UsersPostLoginHandler sets the operation handler for the post login operation
 	UsersPostLoginHandler users.PostLoginHandler
+	// UsersPostPasswordHandler sets the operation handler for the post password operation
+	UsersPostPasswordHandler users.PostPasswordHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -135,8 +153,20 @@ func (o *UserManagementAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
+	if o.SwtAuthAuth == nil {
+		unregistered = append(unregistered, "XTokenAuth")
+	}
+
+	if o.UsersPostCreateHandler == nil {
+		unregistered = append(unregistered, "users.PostCreateHandler")
+	}
+
 	if o.UsersPostLoginHandler == nil {
 		unregistered = append(unregistered, "users.PostLoginHandler")
+	}
+
+	if o.UsersPostPasswordHandler == nil {
+		unregistered = append(unregistered, "users.PostPasswordHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -154,7 +184,17 @@ func (o *UserManagementAPI) ServeErrorFor(operationID string) func(http.Response
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *UserManagementAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
-	return nil
+	result := make(map[string]runtime.Authenticator)
+	for name, scheme := range schemes {
+		switch name {
+
+		case "swtAuth":
+
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.SwtAuthAuth)
+
+		}
+	}
+	return result
 
 }
 
@@ -225,7 +265,17 @@ func (o *UserManagementAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/create"] = users.NewPostCreate(o.context, o.UsersPostCreateHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/login"] = users.NewPostLogin(o.context, o.UsersPostLoginHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/password"] = users.NewPostPassword(o.context, o.UsersPostPasswordHandler)
 
 }
 
