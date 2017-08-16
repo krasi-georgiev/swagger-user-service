@@ -1,0 +1,54 @@
+swagger: '2.0'
+info:
+  description: >-
+    a service for user management.
+  version: 0.0.1
+  title: User Management
+host: "localhost:8080"
+basePath: /v1/account/
+tags:
+  - name: users
+    description: user management - authenticate,create , delete, reset password
+schemes:
+  - http
+paths:
+  /login:
+    post:
+      tags:
+        - users
+      summary: get an swt token to access protected endpoints
+      description: ''
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/Login"
+      responses:
+        200:
+          description: A token object.
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+        404:
+          description: A user not found.
+        default:
+          description: Unexpected error
+
+definitions:
+  Login:
+      type: "object"
+      required:
+      - "email"
+      - "pass"
+      properties:
+        email:
+          type: "string"
+        pass:
+          type: "string"
