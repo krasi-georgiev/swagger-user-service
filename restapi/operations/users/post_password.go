@@ -12,8 +12,7 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
-
-	"github.com/go-openapi/validate"
+	validate "github.com/go-openapi/validate"
 )
 
 // PostPasswordHandlerFunc turns a function with the right signature into a post password handler

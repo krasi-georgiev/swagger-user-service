@@ -14,12 +14,12 @@ import (
 	loads "github.com/go-openapi/loads"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+	security "github.com/go-openapi/runtime/security"
 	spec "github.com/go-openapi/spec"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/choicehealth/user-service/restapi/operations/users"
-	"github.com/go-openapi/runtime/security"
 )
 
 // NewUserManagementAPI creates a new UserManagement instance

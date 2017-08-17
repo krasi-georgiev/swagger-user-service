@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -17,14 +18,20 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/rs/cors"
 	graceful "github.com/tylerb/graceful"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/choicehealth/user-service/restapi/operations"
 	"github.com/choicehealth/user-service/restapi/operations/users"
+
+	"database/sql"
+
+	_ "github.com/lib/pq"
 )
 
 var (
 	verifyKey *rsa.PublicKey
 	signKey   *rsa.PrivateKey
+	db        *sql.DB
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
@@ -42,6 +49,7 @@ func configureFlags(api *operations.UserManagementAPI) {
 			Options:          &keysPaths,
 		},
 	}
+
 }
 
 func configureAPI(api *operations.UserManagementAPI) http.Handler {
@@ -60,23 +68,80 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	// Applies when the "x-token" header is set
 	api.SwtAuthAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (swtAuth) x-token from header param [x-token] has not yet been implemented")
+		t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+			// since we only use the one private key to sign the tokens,
+			// we also only use its public counter part to verify
+			log.Println(verifyKey)
+			return verifyKey, nil
+		})
+		// branch out into the possible error from signing
+		switch err.(type) {
+
+		case nil: // no error
+
+			if !t.Valid { // but may still be invalid
+				log.Println("invalid")
+
+				return nil, nil
+			}
+			log.Println("valid")
+
+		case *jwt.ValidationError: // something was wrong during the validation
+			vErr := err.(*jwt.ValidationError)
+
+			switch vErr.Errors {
+			case jwt.ValidationErrorExpired:
+				log.Println("Token Expired, get a new one.")
+
+			default:
+				log.Printf("ValidationError error: %+v\n", vErr.Errors)
+
+			}
+
+		default: // something else went wrong
+			log.Printf("Token parse error: %v\n", err)
+		}
+		// log.Println(t.Raw)
+		return nil, nil
 	}
 
 	api.UsersPostCreateHandler = users.PostCreateHandlerFunc(func(params users.PostCreateParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation users.PostCreate has not yet been implemented")
+
+		return users.NewPostCreateOK()
 	})
 
 	api.UsersPostLoginHandler = users.PostLoginHandlerFunc(func(params users.PostLoginParams) middleware.Responder {
-		token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
-			"exp": time.Now().Add(time.Hour * 72).Unix(),
-		})
-
-		t, err := token.SignedString(signKey)
+		rows, err := db.Query("SELECT id,user_type_id,password FROM public.user WHERE username=$1", params.Body.Email)
 		if err != nil {
+			log.Println(err)
 			return users.NewPostLoginDefault(0)
 		}
-		return users.NewPostLoginOK().WithPayload(users.PostLoginOKBody{Token: swag.String(t)})
+		defer rows.Close()
+
+		for rows.Next() {
+			var id int
+			var user_type_id int
+			var password string
+			rows.Scan(&id, &user_type_id, &password)
+			if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Pass)) == nil {
+				t := jwt.MapClaims{
+					"exp":   time.Now().Add(time.Hour * 72).Unix(),
+					"scope": "browse",
+				}
+				switch user_type_id {
+				case 1: //admin
+					t["scope"] = t["scope"].(string) + ",create"
+				}
+
+				token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
+				tt, err := token.SignedString(signKey)
+				if err != nil {
+					return users.NewPostLoginDefault(0)
+				}
+				return users.NewPostLoginOK().WithPayload(users.PostLoginOKBody{Token: swag.String(tt)})
+			}
+		}
+		return users.NewPostLoginNotFound()
 	})
 
 	api.ServerShutdown = func() {}
@@ -112,6 +177,12 @@ func configureServer(s *graceful.Server, scheme, addr string) {
 			log.Fatalf("error parsing the  public key :%v", err)
 		}
 	}
+
+	if d, err := sql.Open("postgres", "postgres://"+os.Getenv("DB_USER")+":"+os.Getenv("DB_PASS")+"@"+os.Getenv("DB_HOST")+"/choicehealth?sslmode=disable"); err != nil {
+		log.Fatalf("error connecting to the DB :%v", err)
+	} else {
+		db = d
+	}
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
@@ -123,7 +194,12 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	handleCORS := cors.Default().Handler
-
-	return handleCORS(handler)
+	corsHandler := cors.New(cors.Options{
+		Debug:          false,
+		AllowedHeaders: []string{"*"},
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{},
+		MaxAge:         1000,
+	})
+	return corsHandler.Handler(handler)
 }
