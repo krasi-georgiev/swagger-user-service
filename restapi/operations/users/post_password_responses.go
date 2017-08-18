@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"github.com/choicehealth/user-service/models"
 )
 
 // PostPasswordOKCode is the HTTP code returned for type PostPasswordOK
@@ -23,7 +25,7 @@ type PostPasswordOK struct {
 	/*
 	  In: Body
 	*/
-	Payload PostPasswordOKBody `json:"body,omitempty"`
+	Payload *models.Response `json:"body,omitempty"`
 }
 
 // NewPostPasswordOK creates PostPasswordOK with default headers values
@@ -32,13 +34,13 @@ func NewPostPasswordOK() *PostPasswordOK {
 }
 
 // WithPayload adds the payload to the post password o k response
-func (o *PostPasswordOK) WithPayload(payload PostPasswordOKBody) *PostPasswordOK {
+func (o *PostPasswordOK) WithPayload(payload *models.Response) *PostPasswordOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the post password o k response
-func (o *PostPasswordOK) SetPayload(payload PostPasswordOKBody) {
+func (o *PostPasswordOK) SetPayload(payload *models.Response) {
 	o.Payload = payload
 }
 
@@ -46,54 +48,12 @@ func (o *PostPasswordOK) SetPayload(payload PostPasswordOKBody) {
 func (o *PostPasswordOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
-}
-
-// PostPasswordUnauthorizedCode is the HTTP code returned for type PostPasswordUnauthorized
-const PostPasswordUnauthorizedCode int = 401
-
-/*PostPasswordUnauthorized SWT key is missing or invalid
-
-swagger:response postPasswordUnauthorized
-*/
-type PostPasswordUnauthorized struct {
-	/*
-	  Required: true
-	*/
-	WWWAuthenticate string `json:"WWW_Authenticate"`
-}
-
-// NewPostPasswordUnauthorized creates PostPasswordUnauthorized with default headers values
-func NewPostPasswordUnauthorized() *PostPasswordUnauthorized {
-	return &PostPasswordUnauthorized{}
-}
-
-// WithWWWAuthenticate adds the wWWAuthenticate to the post password unauthorized response
-func (o *PostPasswordUnauthorized) WithWWWAuthenticate(wWWAuthenticate string) *PostPasswordUnauthorized {
-	o.WWWAuthenticate = wWWAuthenticate
-	return o
-}
-
-// SetWWWAuthenticate sets the wWWAuthenticate to the post password unauthorized response
-func (o *PostPasswordUnauthorized) SetWWWAuthenticate(wWWAuthenticate string) {
-	o.WWWAuthenticate = wWWAuthenticate
-}
-
-// WriteResponse to the client
-func (o *PostPasswordUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	// response header WWW_Authenticate
-
-	wWWAuthenticate := o.WWWAuthenticate
-	if wWWAuthenticate != "" {
-		rw.Header().Set("WWW_Authenticate", wWWAuthenticate)
-	}
-
-	rw.WriteHeader(401)
 }
 
 /*PostPasswordDefault Unexpected error
@@ -102,6 +62,11 @@ swagger:response postPasswordDefault
 */
 type PostPasswordDefault struct {
 	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
 }
 
 // NewPostPasswordDefault creates PostPasswordDefault with default headers values
@@ -126,8 +91,25 @@ func (o *PostPasswordDefault) SetStatusCode(code int) {
 	o._statusCode = code
 }
 
+// WithPayload adds the payload to the post password default response
+func (o *PostPasswordDefault) WithPayload(payload *models.Response) *PostPasswordDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post password default response
+func (o *PostPasswordDefault) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *PostPasswordDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

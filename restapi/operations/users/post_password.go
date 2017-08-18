@@ -8,11 +8,7 @@ package users
 import (
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
 )
 
 // PostPasswordHandlerFunc turns a function with the right signature into a post password handler
@@ -72,55 +68,4 @@ func (o *PostPassword) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// PostPasswordOKBody post password o k body
-// swagger:model PostPasswordOKBody
-type PostPasswordOKBody struct {
-
-	// message
-	// Required: true
-	Message *string `json:"message"`
-}
-
-// Validate validates this post password o k body
-func (o *PostPasswordOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateMessage(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *PostPasswordOKBody) validateMessage(formats strfmt.Registry) error {
-
-	if err := validate.Required("postPasswordOK"+"."+"message", "body", o.Message); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *PostPasswordOKBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PostPasswordOKBody) UnmarshalBinary(b []byte) error {
-	var res PostPasswordOKBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

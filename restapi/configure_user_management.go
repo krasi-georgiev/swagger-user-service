@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -20,6 +22,7 @@ import (
 	graceful "github.com/tylerb/graceful"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/choicehealth/user-service/models"
 	"github.com/choicehealth/user-service/restapi/operations"
 	"github.com/choicehealth/user-service/restapi/operations/users"
 
@@ -32,6 +35,7 @@ var (
 	verifyKey *rsa.PublicKey
 	signKey   *rsa.PrivateKey
 	db        *sql.DB
+	userScope []string
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
@@ -67,47 +71,75 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-token" header is set
+	// parse the token
 	api.SwtAuthAuth = func(token string) (interface{}, error) {
 		t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			// since we only use the one private key to sign the tokens,
-			// we also only use its public counter part to verify
-			log.Println(verifyKey)
 			return verifyKey, nil
 		})
-		// branch out into the possible error from signing
+
 		switch err.(type) {
 
-		case nil: // no error
-
+		case nil:
 			if !t.Valid { // but may still be invalid
-				log.Println("invalid")
-
-				return nil, nil
+				return nil, errors.New(401, "invalid swt token")
 			}
-			log.Println("valid")
 
 		case *jwt.ValidationError: // something was wrong during the validation
 			vErr := err.(*jwt.ValidationError)
 
 			switch vErr.Errors {
 			case jwt.ValidationErrorExpired:
-				log.Println("Token Expired, get a new one.")
-
+				return errors.New(440, "token expired, login again"), nil
 			default:
-				log.Printf("ValidationError error: %+v\n", vErr.Errors)
-
+				return errors.New(500, "system error"), nil
 			}
-
 		default: // something else went wrong
-			log.Printf("Token parse error: %v\n", err)
+			return errors.New(500, "system error"), nil
 		}
-		// log.Println(t.Raw)
-		return nil, nil
+
+		c := t.Claims.(jwt.MapClaims)
+
+		userScope = strings.Split(c["scope"].(string), ",")
+
+		return t, nil
 	}
 
 	api.UsersPostCreateHandler = users.PostCreateHandlerFunc(func(params users.PostCreateParams, principal interface{}) middleware.Responder {
+		_, ok := principal.(*jwt.Token)
+		if !ok {
+			return users.NewPostCreateDefault(0)
+		}
 
-		return users.NewPostCreateOK()
+		// check if can create users
+		for _, v := range userScope {
+			if v == "create" {
+				rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Email)
+				if err != nil {
+					log.Println(err)
+					return users.NewPostLoginDefault(0)
+				}
+				defer rows.Close()
+
+				for rows.Next() {
+					return users.NewPostCreateConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("user already exists")})
+				}
+
+				var id int
+				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Pass), bcrypt.DefaultCost)
+				if err != nil {
+					users.NewPostCreateDefault(0)
+					log.Println(err)
+				}
+				err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", params.Body.Email, hashedPassword, 1, 1).Scan(&id)
+				if err != nil {
+					users.NewPostCreateDefault(0)
+					log.Println(err)
+				}
+				return users.NewPostCreateOK().WithPayload(users.PostCreateOKBody{IDProfile: swag.String(strconv.Itoa(id))})
+			}
+		}
+		return users.NewPostCreateUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
+
 	})
 
 	api.UsersPostLoginHandler = users.PostLoginHandlerFunc(func(params users.PostLoginParams) middleware.Responder {

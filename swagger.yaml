@@ -7,7 +7,7 @@ info:
 basePath: /v1/user/
 tags:
   - name: users
-    description: user management - authenticate,create , delete, reset password
+    description: user management
 schemes:
   - http
 paths:
@@ -34,9 +34,10 @@ paths:
               token:
                 type: string
         404:
-          description: A user not found.
+          $ref: "#/responses/NotFoundError"
         default:
-          description: Unexpected error
+          $ref: "#/responses/DefaultError"
+
   /create:
     post:
       security:
@@ -62,9 +63,16 @@ paths:
               idProfile:
                 type: string
         401:
-           $ref: "#/responses/UnauthorizedError"
+          $ref: "#/responses/UnauthorizedError"
+        404:
+          $ref: "#/responses/NotFoundError"
+        409:
+          $ref: "#/responses/UserExistsError"
+        426:
+          $ref: "#/responses/ExpiredTokenError"
         default:
-          description: Unexpected error
+          $ref: "#/responses/DefaultError"
+
   /password:
     post:
       security:
@@ -85,14 +93,30 @@ paths:
         200:
           description: shows a message if the password was set or sent with an email reminder.
           schema:
-            type: object
-            properties:
-              message:
-                type: string
-        401:
-           $ref: "#/responses/UnauthorizedError"
+            $ref: "#/definitions/Response"
         default:
-          description: Unexpected error
+          $ref: "#/responses/DefaultError"
+responses:
+  UnauthorizedError:
+    description: SWT key is missing or invalid
+    schema:
+      $ref: "#/definitions/Response"
+  NotFoundError:
+    description: Resource not found
+    schema:
+      $ref: "#/definitions/Response"
+  UserExistsError:
+    description: Username already taken
+    schema:
+      $ref: "#/definitions/Response"
+  ExpiredTokenError:
+    description: SWT key has expired, request a new one
+    schema:
+      $ref: "#/definitions/Response"
+  DefaultError:
+    description: Unexpected error
+    schema:
+      $ref: "#/definitions/Response"
 definitions:
   Profile:
       type: "object"
@@ -104,14 +128,18 @@ definitions:
           type: "string"
         pass:
           type: "string"
+  Response:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    required:
+      - code
+      - message
 securityDefinitions:
    swtAuth:
      type: apiKey
      in: header
      name: x-token
-responses:
-  UnauthorizedError:
-    description: SWT key is missing or invalid
-    headers:
-      WWW_Authenticate:
-        type: string

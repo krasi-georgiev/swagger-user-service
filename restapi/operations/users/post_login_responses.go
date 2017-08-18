@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"github.com/choicehealth/user-service/models"
 )
 
 // PostLoginOKCode is the HTTP code returned for type PostLoginOK
@@ -56,11 +58,16 @@ func (o *PostLoginOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 // PostLoginNotFoundCode is the HTTP code returned for type PostLoginNotFound
 const PostLoginNotFoundCode int = 404
 
-/*PostLoginNotFound A user not found.
+/*PostLoginNotFound Resource not found
 
 swagger:response postLoginNotFound
 */
 type PostLoginNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
 }
 
 // NewPostLoginNotFound creates PostLoginNotFound with default headers values
@@ -68,10 +75,27 @@ func NewPostLoginNotFound() *PostLoginNotFound {
 	return &PostLoginNotFound{}
 }
 
+// WithPayload adds the payload to the post login not found response
+func (o *PostLoginNotFound) WithPayload(payload *models.Response) *PostLoginNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post login not found response
+func (o *PostLoginNotFound) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *PostLoginNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 /*PostLoginDefault Unexpected error
@@ -80,6 +104,11 @@ swagger:response postLoginDefault
 */
 type PostLoginDefault struct {
 	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
 }
 
 // NewPostLoginDefault creates PostLoginDefault with default headers values
@@ -104,8 +133,25 @@ func (o *PostLoginDefault) SetStatusCode(code int) {
 	o._statusCode = code
 }
 
+// WithPayload adds the payload to the post login default response
+func (o *PostLoginDefault) WithPayload(payload *models.Response) *PostLoginDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post login default response
+func (o *PostLoginDefault) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *PostLoginDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"github.com/choicehealth/user-service/models"
 )
 
 // PostCreateOKCode is the HTTP code returned for type PostCreateOK
@@ -61,10 +63,11 @@ const PostCreateUnauthorizedCode int = 401
 swagger:response postCreateUnauthorized
 */
 type PostCreateUnauthorized struct {
+
 	/*
-	  Required: true
+	  In: Body
 	*/
-	WWWAuthenticate string `json:"WWW_Authenticate"`
+	Payload *models.Response `json:"body,omitempty"`
 }
 
 // NewPostCreateUnauthorized creates PostCreateUnauthorized with default headers values
@@ -72,28 +75,156 @@ func NewPostCreateUnauthorized() *PostCreateUnauthorized {
 	return &PostCreateUnauthorized{}
 }
 
-// WithWWWAuthenticate adds the wWWAuthenticate to the post create unauthorized response
-func (o *PostCreateUnauthorized) WithWWWAuthenticate(wWWAuthenticate string) *PostCreateUnauthorized {
-	o.WWWAuthenticate = wWWAuthenticate
+// WithPayload adds the payload to the post create unauthorized response
+func (o *PostCreateUnauthorized) WithPayload(payload *models.Response) *PostCreateUnauthorized {
+	o.Payload = payload
 	return o
 }
 
-// SetWWWAuthenticate sets the wWWAuthenticate to the post create unauthorized response
-func (o *PostCreateUnauthorized) SetWWWAuthenticate(wWWAuthenticate string) {
-	o.WWWAuthenticate = wWWAuthenticate
+// SetPayload sets the payload to the post create unauthorized response
+func (o *PostCreateUnauthorized) SetPayload(payload *models.Response) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client
 func (o *PostCreateUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	// response header WWW_Authenticate
-
-	wWWAuthenticate := o.WWWAuthenticate
-	if wWWAuthenticate != "" {
-		rw.Header().Set("WWW_Authenticate", wWWAuthenticate)
-	}
-
 	rw.WriteHeader(401)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostCreateNotFoundCode is the HTTP code returned for type PostCreateNotFound
+const PostCreateNotFoundCode int = 404
+
+/*PostCreateNotFound Resource not found
+
+swagger:response postCreateNotFound
+*/
+type PostCreateNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
+}
+
+// NewPostCreateNotFound creates PostCreateNotFound with default headers values
+func NewPostCreateNotFound() *PostCreateNotFound {
+	return &PostCreateNotFound{}
+}
+
+// WithPayload adds the payload to the post create not found response
+func (o *PostCreateNotFound) WithPayload(payload *models.Response) *PostCreateNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post create not found response
+func (o *PostCreateNotFound) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostCreateNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostCreateConflictCode is the HTTP code returned for type PostCreateConflict
+const PostCreateConflictCode int = 409
+
+/*PostCreateConflict Username already taken
+
+swagger:response postCreateConflict
+*/
+type PostCreateConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
+}
+
+// NewPostCreateConflict creates PostCreateConflict with default headers values
+func NewPostCreateConflict() *PostCreateConflict {
+	return &PostCreateConflict{}
+}
+
+// WithPayload adds the payload to the post create conflict response
+func (o *PostCreateConflict) WithPayload(payload *models.Response) *PostCreateConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post create conflict response
+func (o *PostCreateConflict) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostCreateConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostCreateUpgradeRequiredCode is the HTTP code returned for type PostCreateUpgradeRequired
+const PostCreateUpgradeRequiredCode int = 426
+
+/*PostCreateUpgradeRequired SWT key has expired, request a new one
+
+swagger:response postCreateUpgradeRequired
+*/
+type PostCreateUpgradeRequired struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
+}
+
+// NewPostCreateUpgradeRequired creates PostCreateUpgradeRequired with default headers values
+func NewPostCreateUpgradeRequired() *PostCreateUpgradeRequired {
+	return &PostCreateUpgradeRequired{}
+}
+
+// WithPayload adds the payload to the post create upgrade required response
+func (o *PostCreateUpgradeRequired) WithPayload(payload *models.Response) *PostCreateUpgradeRequired {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post create upgrade required response
+func (o *PostCreateUpgradeRequired) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostCreateUpgradeRequired) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(426)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 /*PostCreateDefault Unexpected error
@@ -102,6 +233,11 @@ swagger:response postCreateDefault
 */
 type PostCreateDefault struct {
 	_statusCode int
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
 }
 
 // NewPostCreateDefault creates PostCreateDefault with default headers values
@@ -126,8 +262,25 @@ func (o *PostCreateDefault) SetStatusCode(code int) {
 	o._statusCode = code
 }
 
+// WithPayload adds the payload to the post create default response
+func (o *PostCreateDefault) WithPayload(payload *models.Response) *PostCreateDefault {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post create default response
+func (o *PostCreateDefault) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
 // WriteResponse to the client
 func (o *PostCreateDefault) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(o._statusCode)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

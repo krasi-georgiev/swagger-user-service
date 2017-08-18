@@ -66,8 +66,17 @@ func init() {
           "401": {
             "$ref": "#/responses/UnauthorizedError"
           },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/responses/UserExistsError"
+          },
+          "426": {
+            "$ref": "#/responses/ExpiredTokenError"
+          },
           "default": {
-            "description": "Unexpected error"
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -106,10 +115,10 @@ func init() {
             }
           },
           "404": {
-            "description": "A user not found."
+            "$ref": "#/responses/NotFoundError"
           },
           "default": {
-            "description": "Unexpected error"
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -144,19 +153,11 @@ func init() {
           "200": {
             "description": "shows a message if the password was set or sent with an email reminder.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/Response"
             }
           },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
           "default": {
-            "description": "Unexpected error"
+            "$ref": "#/responses/DefaultError"
           }
         }
       }
@@ -177,15 +178,52 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "Response": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
     }
   },
   "responses": {
+    "DefaultError": {
+      "description": "Unexpected error",
+      "schema": {
+        "$ref": "#/definitions/Response"
+      }
+    },
+    "ExpiredTokenError": {
+      "description": "SWT key has expired, request a new one",
+      "schema": {
+        "$ref": "#/definitions/Response"
+      }
+    },
+    "NotFoundError": {
+      "description": "Resource not found",
+      "schema": {
+        "$ref": "#/definitions/Response"
+      }
+    },
     "UnauthorizedError": {
       "description": "SWT key is missing or invalid",
-      "headers": {
-        "WWW_Authenticate": {
-          "type": "string"
-        }
+      "schema": {
+        "$ref": "#/definitions/Response"
+      }
+    },
+    "UserExistsError": {
+      "description": "Username already taken",
+      "schema": {
+        "$ref": "#/definitions/Response"
       }
     }
   },
@@ -198,7 +236,7 @@ func init() {
   },
   "tags": [
     {
-      "description": "user management - authenticate,create , delete, reset password",
+      "description": "user management",
       "name": "users"
     }
   ]

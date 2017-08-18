@@ -13,29 +13,29 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Login login
-// swagger:model Login
-type Login struct {
+// Response response
+// swagger:model Response
+type Response struct {
 
-	// email
+	// code
 	// Required: true
-	Email *string `json:"email"`
+	Code *string `json:"code"`
 
-	// pass
+	// message
 	// Required: true
-	Pass *string `json:"pass"`
+	Message *string `json:"message"`
 }
 
-// Validate validates this login
-func (m *Login) Validate(formats strfmt.Registry) error {
+// Validate validates this response
+func (m *Response) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateEmail(formats); err != nil {
+	if err := m.validateCode(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
-	if err := m.validatePass(formats); err != nil {
+	if err := m.validateMessage(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -46,18 +46,18 @@ func (m *Login) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Login) validateEmail(formats strfmt.Registry) error {
+func (m *Response) validateCode(formats strfmt.Registry) error {
 
-	if err := validate.Required("email", "body", m.Email); err != nil {
+	if err := validate.Required("code", "body", m.Code); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *Login) validatePass(formats strfmt.Registry) error {
+func (m *Response) validateMessage(formats strfmt.Registry) error {
 
-	if err := validate.Required("pass", "body", m.Pass); err != nil {
+	if err := validate.Required("message", "body", m.Message); err != nil {
 		return err
 	}
 
@@ -65,7 +65,7 @@ func (m *Login) validatePass(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Login) MarshalBinary() ([]byte, error) {
+func (m *Response) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -73,8 +73,8 @@ func (m *Login) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Login) UnmarshalBinary(b []byte) error {
-	var res Login
+func (m *Response) UnmarshalBinary(b []byte) error {
+	var res Response
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
