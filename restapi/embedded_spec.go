@@ -177,6 +177,10 @@ func init() {
         "pass": {
           "type": "string"
         }
+      },
+      "example": {
+        "email": "admin@mail.com",
+        "pass": "password"
       }
     },
     "Response": {

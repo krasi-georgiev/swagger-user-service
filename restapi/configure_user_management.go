@@ -150,6 +150,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.UsersPostLoginHandler = users.PostLoginHandlerFunc(func(params users.PostLoginParams) middleware.Responder {
 		rows, err := db.Query("SELECT id,user_type_id,password FROM public.user WHERE username=$1", params.Body.Email)
+
 		if err != nil {
 			log.Println(err)
 			return users.NewPostLoginDefault(0)
@@ -160,10 +161,11 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			var id int
 			var user_type_id int
 			var password string
+
 			rows.Scan(&id, &user_type_id, &password)
 			if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Pass)) == nil {
 				t := jwt.MapClaims{
-					"exp":   time.Now().Add(time.Hour * 72).Unix(),
+					"exp":   time.Now().Add(time.Hour * 240).Unix(),
 					"scope": "browse",
 				}
 				switch user_type_id {
