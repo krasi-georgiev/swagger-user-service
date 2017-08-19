@@ -12,7 +12,6 @@ openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
 JWT scopes
 
 TODO:
-	user registration
 
 	implement context cancelling
 	testing

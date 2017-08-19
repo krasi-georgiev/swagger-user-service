@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"net/mail"
+
 	"github.com/dgrijalva/jwt-go"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
@@ -123,6 +125,10 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				for rows.Next() {
 					return users.NewPostCreateConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("user already exists")})
 				}
+				e, err := mail.ParseAddress(*params.Body.Email)
+				if err != nil {
+					return users.NewPostCreateConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("invalid email")})
+				}
 
 				var id int
 				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Pass), bcrypt.DefaultCost)
@@ -130,7 +136,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 					users.NewPostCreateDefault(0)
 					log.Println(err)
 				}
-				err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", params.Body.Email, hashedPassword, 1, 1).Scan(&id)
+				err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", e.Address, hashedPassword, 1, 1).Scan(&id)
 				if err != nil {
 					users.NewPostCreateDefault(0)
 					log.Println(err)
