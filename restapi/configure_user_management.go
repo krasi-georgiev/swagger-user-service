@@ -235,7 +235,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		}
 		// password ok so can disable 2fa
 		if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Password)) == nil {
-			_, err = db.Exec("UPDATE public.user SET f2a=NULL WHERE id=$2 ;", j.Id_profile)
+			_, err = db.Exec("UPDATE public.user SET f2a=NULL WHERE id=$1 ;", j.Id_profile)
 			if err != nil {
 				log.Println(err)
 				return operations.NewDeleteUser2faDefault(0)
