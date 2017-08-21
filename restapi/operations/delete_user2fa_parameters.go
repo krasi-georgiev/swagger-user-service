@@ -11,6 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+
+	"github.com/choicehealth/user-service/models"
 )
 
 // NewDeleteUser2faParams creates a new DeleteUser2faParams object
@@ -32,7 +34,7 @@ type DeleteUser2faParams struct {
 	/*
 	  In: body
 	*/
-	Body DeleteUser2faBody
+	Body *models.F2aDisable
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -43,13 +45,16 @@ func (o *DeleteUser2faParams) BindRequest(r *http.Request, route *middleware.Mat
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body DeleteUser2faBody
+		var body models.F2aDisable
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
+			if err := body.Validate(route.Formats); err != nil {
+				res = append(res, err)
+			}
 
 			if len(res) == 0 {
-				o.Body = body
+				o.Body = &body
 			}
 		}
 

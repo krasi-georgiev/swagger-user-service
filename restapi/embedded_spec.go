@@ -62,21 +62,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "code",
-                "secret"
-              ],
-              "properties": {
-                "code": {
-                  "description": "the 2 factor code generted by the android app after scanning the barcode",
-                  "type": "string"
-                },
-                "secret": {
-                  "description": "the master password which will be used to for decoding",
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/F2aEnable"
             }
           }
         ],
@@ -99,21 +85,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "jwt",
-                "f2a"
-              ],
-              "properties": {
-                "f2a": {
-                  "description": "the  2 factor time code accuired from the google authenticator app",
-                  "type": "string"
-                },
-                "jwt": {
-                  "description": "the jwt token accuired form the initial login",
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/F2aAuth"
             }
           }
         ],
@@ -139,15 +111,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "password"
-              ],
-              "properties": {
-                "password": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/F2aDisable"
             }
           }
         ],
@@ -172,23 +136,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "email",
-                "password"
-              ],
-              "properties": {
-                "email": {
-                  "type": "string"
-                },
-                "password": {
-                  "type": "string"
-                }
-              },
-              "example": {
-                "email": "admin@mail.com",
-                "password": "password"
-              }
+              "$ref": "#/definitions/Login"
             }
           }
         ],
@@ -329,6 +277,51 @@ func init() {
     }
   },
   "definitions": {
+    "F2aAuth": {
+      "type": "object",
+      "required": [
+        "jwt",
+        "f2a"
+      ],
+      "properties": {
+        "f2a": {
+          "description": "the  2 factor time code accuired from the google authenticator app",
+          "type": "string"
+        },
+        "jwt": {
+          "description": "the jwt token accuired form the initial login",
+          "type": "string"
+        }
+      }
+    },
+    "F2aDisable": {
+      "type": "object",
+      "required": [
+        "password"
+      ],
+      "properties": {
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "F2aEnable": {
+      "type": "object",
+      "required": [
+        "code",
+        "secret"
+      ],
+      "properties": {
+        "code": {
+          "description": "the 2 factor code generted by the android app after scanning the barcode",
+          "type": "string"
+        },
+        "secret": {
+          "description": "the master password which will be used to for decoding",
+          "type": "string"
+        }
+      }
+    },
     "Jwt": {
       "type": "object",
       "required": [
@@ -338,6 +331,25 @@ func init() {
         "jwt": {
           "type": "string"
         }
+      }
+    },
+    "Login": {
+      "type": "object",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "example": {
+        "email": "admin@mail.com",
+        "password": "password"
       }
     },
     "Profile": {

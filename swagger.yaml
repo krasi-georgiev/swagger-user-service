@@ -23,18 +23,8 @@ paths:
         - in: body
           name: body
           schema:
-            type: object
-            required:
-            - "email"
-            - "password"
-            properties:
-              email:
-                type: string
-              password:
-                type: string
-            example:
-                  email: "admin@mail.com"
-                  password: "password"
+              $ref: "#/definitions/Login"
+
       responses:
         200:
           description: A jwt token to use for authentication.
@@ -55,12 +45,8 @@ paths:
         - in: body
           name: body
           schema:
-            type: object
-            required:
-            - "password"
-            properties:
-              password:
-                type: string
+            $ref:
+              "#/definitions/F2aDisable"
       responses:
         200:
           description: 2fa disabled.
@@ -89,17 +75,7 @@ paths:
         - in: body
           name: body
           schema:
-            type: object
-            required:
-            - code
-            - secret
-            properties:
-              code:
-                type: string
-                description: the 2 factor code generted by the android app after scanning the barcode
-              secret:
-                type: string
-                description: the master password which will be used to for decoding
+            $ref: "#/definitions/F2aEnable"
       responses:
         200:
           description: 2fa enabled.
@@ -114,17 +90,7 @@ paths:
         - in: body
           name: body
           schema:
-            type: object
-            required:
-            - jwt
-            - f2a
-            properties:
-              jwt:
-                type: string
-                description: the jwt token accuired form the initial login
-              f2a:
-                type: string
-                description: the  2 factor time code accuired from the google authenticator app
+            $ref: "#/definitions/F2aAuth"
       responses:
         200:
           description: the new jwt token that can be used for all endpoints.
@@ -234,6 +200,50 @@ definitions:
       properties:
         jwt:
           type: string
+  F2aAuth:
+      type: object
+      required:
+      - jwt
+      - f2a
+      properties:
+        jwt:
+          type: string
+          description: the jwt token accuired form the initial login
+        f2a:
+          type: string
+          description: the  2 factor time code accuired from the google authenticator app
+  F2aDisable:
+      type: object
+      required:
+      - "password"
+      properties:
+        password:
+          type: string
+  F2aEnable:
+      type: object
+      required:
+        - code
+        - secret
+      properties:
+        code:
+          type: string
+          description: the 2 factor code generted by the android app after scanning the barcode
+        secret:
+          type: string
+          description: the master password which will be used to for decoding
+  Login:
+      type: object
+      required:
+        - "email"
+        - "password"
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      example:
+            email: "admin@mail.com"
+            password: "password"
   Profile:
       type: object
       required:

@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-	swag "github.com/go-openapi/swag"
 )
 
 // PostUser2faHandlerFunc turns a function with the right signature into a post user2fa handler
@@ -56,35 +55,4 @@ func (o *PostUser2fa) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// PostUser2faBody post user2fa body
-// swagger:model PostUser2faBody
-type PostUser2faBody struct {
-
-	// the  2 factor time code accuired from the google authenticator app
-	// Required: true
-	F2a *string `json:"f2a"`
-
-	// the jwt token accuired form the initial login
-	// Required: true
-	Jwt *string `json:"jwt"`
-}
-
-// MarshalBinary interface implementation
-func (o *PostUser2faBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PostUser2faBody) UnmarshalBinary(b []byte) error {
-	var res PostUser2faBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

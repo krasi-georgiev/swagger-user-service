@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-	swag "github.com/go-openapi/swag"
 )
 
 // PostUserLoginHandlerFunc turns a function with the right signature into a post user login handler
@@ -56,35 +55,4 @@ func (o *PostUserLogin) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// PostUserLoginBody post user login body
-// swagger:model PostUserLoginBody
-type PostUserLoginBody struct {
-
-	// email
-	// Required: true
-	Email *string `json:"email"`
-
-	// password
-	// Required: true
-	Password *string `json:"password"`
-}
-
-// MarshalBinary interface implementation
-func (o *PostUserLoginBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PostUserLoginBody) UnmarshalBinary(b []byte) error {
-	var res PostUserLoginBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

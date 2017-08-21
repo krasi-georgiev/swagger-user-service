@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-	swag "github.com/go-openapi/swag"
 )
 
 // DeleteUser2faHandlerFunc turns a function with the right signature into a delete user2fa handler
@@ -69,31 +68,4 @@ func (o *DeleteUser2fa) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// DeleteUser2faBody delete user2fa body
-// swagger:model DeleteUser2faBody
-type DeleteUser2faBody struct {
-
-	// password
-	// Required: true
-	Password *string `json:"password"`
-}
-
-// MarshalBinary interface implementation
-func (o *DeleteUser2faBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *DeleteUser2faBody) UnmarshalBinary(b []byte) error {
-	var res DeleteUser2faBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

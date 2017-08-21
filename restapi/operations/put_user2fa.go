@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-	swag "github.com/go-openapi/swag"
 )
 
 // PutUser2faHandlerFunc turns a function with the right signature into a put user2fa handler
@@ -69,35 +68,4 @@ func (o *PutUser2fa) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// PutUser2faBody put user2fa body
-// swagger:model PutUser2faBody
-type PutUser2faBody struct {
-
-	// the 2 factor code generted by the android app after scanning the barcode
-	// Required: true
-	Code *string `json:"code"`
-
-	// the master password which will be used to for decoding
-	// Required: true
-	Secret *string `json:"secret"`
-}
-
-// MarshalBinary interface implementation
-func (o *PutUser2faBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PutUser2faBody) UnmarshalBinary(b []byte) error {
-	var res PutUser2faBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }
