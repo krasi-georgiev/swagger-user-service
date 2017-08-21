@@ -97,6 +97,8 @@ func main() {
 		if len(f_gen_account) == 0 {
 			f_gen_account = os.Getenv("USER")
 		}
+
+		fmt.Println(f_gen_key)
 		fmt.Printf("salt: %s\n%s\n", f_gen_key, auth.QrCode(f_gen_account, f_gen_key))
 		return
 	}

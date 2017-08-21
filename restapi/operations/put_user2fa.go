@@ -75,8 +75,13 @@ func (o *PutUser2fa) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 // swagger:model PutUser2faBody
 type PutUser2faBody struct {
 
-	// f2a
-	F2a string `json:"f2a,omitempty"`
+	// the 2 factor code generted by the android app after scanning the barcode
+	// Required: true
+	Code *string `json:"code"`
+
+	// the master password which will be used to for decoding
+	// Required: true
+	Secret *string `json:"secret"`
 }
 
 // MarshalBinary interface implementation

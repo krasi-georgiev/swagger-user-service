@@ -93,9 +93,16 @@ paths:
           name: body
           schema:
             type: object
+            required:
+            - code
+            - secret
             properties:
-              f2a:
+              code:
                 type: string
+                description: the 2 factor code generted by the android app after scanning the barcode
+              secret:
+                type: string
+                description: the master password which will be used to for decoding
       responses:
         200:
           description: 2fa enabled.

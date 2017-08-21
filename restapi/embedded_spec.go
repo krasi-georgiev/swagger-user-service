@@ -63,8 +63,17 @@ func init() {
             "in": "body",
             "schema": {
               "type": "object",
+              "required": [
+                "code",
+                "secret"
+              ],
               "properties": {
-                "f2a": {
+                "code": {
+                  "description": "the 2 factor code generted by the android app after scanning the barcode",
+                  "type": "string"
+                },
+                "secret": {
+                  "description": "the master password which will be used to for decoding",
                   "type": "string"
                 }
               }

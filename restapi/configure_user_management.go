@@ -182,6 +182,9 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				if err != nil {
 					return operations.NewPostUserLoginDefault(0)
 				}
+				if f2a != "" {
+					return operations.NewPostUserLoginPartialContent().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
+				}
 				return operations.NewPostUserLoginOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 			}
 		}
@@ -194,18 +197,14 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	// qr and salt generator
 	api.GetUser2faHandler = operations.GetUser2faHandlerFunc(func(params operations.GetUser2faParams, principal interface{}) middleware.Responder {
-		buf := bytes.Buffer{}
-		err := binary.Write(&buf, binary.BigEndian, int64(math.Floor(float64(time.Now().UnixNano())/float64(1000)/float64(30))))
+		secret, err := GenSecretKey()
 		if err != nil {
 			log.Println(err)
 			return operations.NewGetUser2faDefault(0)
-
 		}
-		h := hmac.New(func() hash.Hash { return sha256.New() }, buf.Bytes())
-		s := string(h.Sum(nil))
 
-		if qr, err := BarcodeImage("Choicehealth", []byte(s)); err == nil {
-			return operations.NewGetUser2faOK().WithPayload(operations.GetUser2faOKBody{Qr: swag.String(qr), Secret: swag.String(fmt.Sprintf("%x", s))})
+		if qr, err := BarcodeImage("Choicehealth", []byte(secret)); err == nil {
+			return operations.NewGetUser2faOK().WithPayload(operations.GetUser2faOKBody{Qr: swag.String(qr), Secret: swag.String(secret)})
 
 		} else {
 			log.Println(err)
@@ -213,8 +212,27 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		}
 	})
+
+	// Expects a valid 2fa token to verify and enable on the account
 	api.PutUser2faHandler = operations.PutUser2faHandlerFunc(func(params operations.PutUser2faParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation .PostUser2fa has not yet been implemented")
+		// verify the code and if match save the master secret for the account
+		code, _, err := GetCurrent2faCode(*params.Body.Secret)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPutUser2faDefault(0)
+		}
+
+		// code matches so can save the secret in the db
+		if code == *params.Body.Code {
+			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", params.Body.Secret, principal.(*Jwt).Id_profile)
+			if err != nil {
+				log.Println(err)
+				return operations.NewPutUser2faDefault(0)
+			}
+			return operations.NewPutUser2faOK()
+		}
+		return operations.NewPutUser2faUnauthorized().WithPayload((&models.Response{Code: swag.String("401"), Message: swag.String("mismatched 2 factor code")}))
+
 	})
 
 	// authenticate against the 2fa
@@ -240,7 +258,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			return operations.NewPutUser2faDefault(0)
 		}
 
-		if strconv.Itoa(code) == *params.Body.F2a {
+		if code == *params.Body.F2a {
 
 			// now generate a new jwt token without the 2fa lock
 			t := jwt.MapClaims{
@@ -325,7 +343,7 @@ func BarcodeImage(label string, secretkey []byte) (string, error) {
 	issuer := "go-google-authenticator"
 
 	otp_str := fmt.Sprintf("otpauth://totp/%s:%s?secret=%s&issuer=%s",
-		issuer, "Choicehealth", base32.StdEncoding.EncodeToString(secretkey), issuer)
+		issuer, label, base32.StdEncoding.EncodeToString(secretkey), issuer)
 
 	c, err := qr.Encode(otp_str, qr.ECLevelM)
 
@@ -344,7 +362,25 @@ func BarcodeImage(label string, secretkey []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
-func GetCurrent2faCode(secretKey string) (int, int64, error) {
+func GenSecretKey() (string, error) {
+
+	hmac_hash := sha256.New()
+
+	buf := bytes.Buffer{}
+	err := binary.Write(&buf, binary.BigEndian, getTs())
+	if err != nil {
+		return "", err
+	}
+	h := hmac.New(func() hash.Hash { return hmac_hash }, buf.Bytes())
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
+}
+
+func getTs() int64 {
+	un := float64(time.Now().UnixNano()) / float64(1000) / float64(30)
+	return int64(math.Floor(un))
+}
+
+func GetCurrent2faCode(secretKey string) (string, int64, error) {
 	now := time.Now().Unix()
 	interval := 30
 	t_chunk := (now / int64(interval))
@@ -352,7 +388,7 @@ func GetCurrent2faCode(secretKey string) (int, int64, error) {
 	buf_in := bytes.Buffer{}
 	err := binary.Write(&buf_in, binary.BigEndian, int64(t_chunk))
 	if err != nil {
-		return 0, 0, err
+		return "", 0, err
 	}
 
 	h := hmac.New(func() hash.Hash { return sha1.New() }, bytes.NewBufferString(secretKey).Bytes())
@@ -368,7 +404,7 @@ func GetCurrent2faCode(secretKey string) (int, int64, error) {
 	buf_out := bytes.NewBuffer(code_sect)
 	err = binary.Read(buf_out, binary.BigEndian, &code)
 	if err != nil {
-		return 0, 0, err
+		return "", 0, err
 	}
 
 	code = code & 0x7FFFFFFF
@@ -378,7 +414,7 @@ func GetCurrent2faCode(secretKey string) (int, int64, error) {
 	i := int64(interval)
 	x := (((now + i) / i) * i) - now
 
-	return int(code), x, nil
+	return fmt.Sprintf("%06d", code), x, nil
 }
 
 func SetScopes(user_type_id int) string {
