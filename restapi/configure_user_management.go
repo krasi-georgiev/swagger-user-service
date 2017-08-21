@@ -192,7 +192,30 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	})
 
 	api.DeleteUser2faHandler = operations.DeleteUser2faHandlerFunc(func(params operations.DeleteUser2faParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation .DeleteUser2fa has not yet been implemented")
+		j, ok := principal.(*Jwt)
+		if !ok {
+			operations.NewDeleteUser2faDefault(0)
+		}
+
+		var password string
+		err := db.QueryRow("SELECT password FROM public.user WHERE id=$1", j.Id_profile).Scan(&password)
+
+		if err != nil {
+			log.Println(err)
+			return operations.NewDeleteUser2faDefault(0)
+		}
+		// password ok so can disable 2fa
+		if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Password)) == nil {
+			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", "", j.Id_profile)
+			if err != nil {
+				log.Println(err)
+				return operations.NewDeleteUser2faDefault(0)
+			}
+			return operations.NewDeleteUser2faOK()
+
+		}
+		return operations.NewDeleteUser2faUnauthorized()
+
 	})
 
 	// qr and salt generator

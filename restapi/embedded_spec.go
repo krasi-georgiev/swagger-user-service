@@ -141,13 +141,9 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "id_profile",
                 "password"
               ],
               "properties": {
-                "id_profile": {
-                  "type": "string"
-                },
                 "password": {
                   "type": "string"
                 }

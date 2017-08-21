@@ -4,8 +4,6 @@ openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
 
 
 TODO:
-	2fa - put to enable on the account
-	2fa - delete to disable 2fa on account - need to provide an existing password to disable
 
 	/user delete
 

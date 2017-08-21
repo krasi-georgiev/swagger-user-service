@@ -75,10 +75,6 @@ func (o *DeleteUser2fa) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 // swagger:model DeleteUser2faBody
 type DeleteUser2faBody struct {
 
-	// id profile
-	// Required: true
-	IDProfile *string `json:"id_profile"`
-
 	// password
 	// Required: true
 	Password *string `json:"password"`
