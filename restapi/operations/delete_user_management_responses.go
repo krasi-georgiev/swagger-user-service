@@ -77,6 +77,49 @@ func (o *DeleteUserManagementUnauthorized) WriteResponse(rw http.ResponseWriter,
 	}
 }
 
+// DeleteUserManagementNotFoundCode is the HTTP code returned for type DeleteUserManagementNotFound
+const DeleteUserManagementNotFoundCode int = 404
+
+/*DeleteUserManagementNotFound Resource not found
+
+swagger:response deleteUserManagementNotFound
+*/
+type DeleteUserManagementNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
+}
+
+// NewDeleteUserManagementNotFound creates DeleteUserManagementNotFound with default headers values
+func NewDeleteUserManagementNotFound() *DeleteUserManagementNotFound {
+	return &DeleteUserManagementNotFound{}
+}
+
+// WithPayload adds the payload to the delete user management not found response
+func (o *DeleteUserManagementNotFound) WithPayload(payload *models.Response) *DeleteUserManagementNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete user management not found response
+func (o *DeleteUserManagementNotFound) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteUserManagementNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*DeleteUserManagementDefault Unexpected error
 
 swagger:response deleteUserManagementDefault

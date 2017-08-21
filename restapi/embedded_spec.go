@@ -281,6 +281,9 @@ func init() {
           "401": {
             "$ref": "#/responses/UnauthorizedError"
           },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }

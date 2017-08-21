@@ -100,52 +100,81 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.PostUserManagementHandler = operations.PostUserManagementHandlerFunc(func(params operations.PostUserManagementParams, principal interface{}) middleware.Responder {
 
-		// check if can create users
-		for _, v := range principal.(*Jwt).Scope {
-			if v == "create" {
-				rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Email)
-				if err != nil {
-					log.Println(err)
-					return operations.NewPostUserManagementDefault(0)
-				}
-				defer rows.Close()
-
-				for rows.Next() {
-					return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("user already exists")})
-				}
-				e, err := mail.ParseAddress(*params.Body.Email)
-				if err != nil {
-					return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("invalid email")})
-				}
-
-				var id int
-				hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Password), bcrypt.DefaultCost)
-				if err != nil {
-					operations.NewPostUserManagementDefault(0)
-					log.Println(err)
-				}
-
-				role, err := strconv.Atoi(*params.Body.UserTypeID)
-				if err != nil {
-					operations.NewPostUserManagementDefault(0)
-					log.Println(err)
-				}
-
-				tenant, err := strconv.Atoi(*params.Body.TenantID)
-				if err != nil {
-					operations.NewPostUserManagementDefault(0)
-					log.Println(err)
-				}
-				err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", e.Address, hashedPassword, role, tenant).Scan(&id)
-				if err != nil {
-					operations.NewPostUserManagementDefault(0)
-					log.Println(err)
-				}
-				return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: swag.String(strconv.Itoa(id))})
-			}
+		j, ok := principal.(*Jwt)
+		if !ok {
+			operations.NewPostUserManagementDefault(0)
 		}
-		return operations.NewPostUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
+		// check if can create users
+		if !CheckScope(j.Scope, "createUser") {
+			return operations.NewPostUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
+		}
+		rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Email)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPostUserManagementDefault(0)
+		}
+		defer rows.Close()
 
+		for rows.Next() {
+			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("user already exists")})
+		}
+		e, err := mail.ParseAddress(*params.Body.Email)
+		if err != nil {
+			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("invalid email")})
+		}
+
+		var id int
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Password), bcrypt.DefaultCost)
+		if err != nil {
+			operations.NewPostUserManagementDefault(0)
+			log.Println(err)
+		}
+
+		role, err := strconv.Atoi(*params.Body.UserTypeID)
+		if err != nil {
+			operations.NewPostUserManagementDefault(0)
+			log.Println(err)
+		}
+
+		tenant, err := strconv.Atoi(*params.Body.TenantID)
+		if err != nil {
+			operations.NewPostUserManagementDefault(0)
+			log.Println(err)
+		}
+		err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", e.Address, hashedPassword, role, tenant).Scan(&id)
+		if err != nil {
+			operations.NewPostUserManagementDefault(0)
+			log.Println(err)
+		}
+		return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: swag.String(strconv.Itoa(id))})
+
+	})
+	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
+		j, ok := principal.(*Jwt)
+		if !ok {
+			operations.NewDeleteUserManagementDefault(0)
+		}
+		// check if can delete users
+		if !CheckScope(j.Scope, "deleteUser") {
+			return operations.NewDeleteUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user delete scope")})
+		}
+
+		id_profile, err := strconv.Atoi(*params.Body.IDProfile)
+
+		if err != nil || id_profile < 1 {
+			return operations.NewDeleteUserManagementDefault(400).WithPayload(&models.Response{Code: swag.String("400"), Message: swag.String("invalid profile id")})
+		}
+
+		result, err := db.Exec("DELETE FROM public.user WHERE id=$1 ;", id_profile)
+		if err != nil {
+			log.Println(err)
+			return operations.NewDeleteUserManagementDefault(0)
+		}
+		if count, err := result.RowsAffected(); err != nil || count == 0 {
+			return operations.NewDeleteUserManagementNotFound().WithPayload((&models.Response{Code: swag.String("404"), Message: swag.String("user with this id doesn't exist")}))
+		}
+
+		return operations.NewDeleteUserManagementOK()
 	})
 
 	api.PostUserLoginHandler = operations.PostUserLoginHandlerFunc(func(params operations.PostUserLoginParams) middleware.Responder {
@@ -206,7 +235,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		}
 		// password ok so can disable 2fa
 		if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Password)) == nil {
-			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", "", j.Id_profile)
+			_, err = db.Exec("UPDATE public.user SET f2a=NULL WHERE id=$2 ;", j.Id_profile)
 			if err != nil {
 				log.Println(err)
 				return operations.NewDeleteUser2faDefault(0)
@@ -238,6 +267,10 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	// Expects a valid 2fa token to verify and enable on the account
 	api.PutUser2faHandler = operations.PutUser2faHandlerFunc(func(params operations.PutUser2faParams, principal interface{}) middleware.Responder {
+		j, ok := principal.(*Jwt)
+		if !ok {
+			operations.NewPutUser2faDefault(0)
+		}
 		// verify the code and if match save the master secret for the account
 		code, _, err := GetCurrent2faCode(*params.Body.Secret)
 		if err != nil {
@@ -247,7 +280,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		// code matches so can save the secret in the db
 		if code == *params.Body.Code {
-			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", params.Body.Secret, principal.(*Jwt).Id_profile)
+			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", params.Body.Secret, j.Id_profile)
 			if err != nil {
 				log.Println(err)
 				return operations.NewPutUser2faDefault(0)
@@ -444,9 +477,18 @@ func SetScopes(user_type_id int) string {
 	scope := "browse"
 	switch user_type_id {
 	case 1: //admin
-		scope = scope + ",create"
+		scope = scope + ",createUser,deleteUser"
 	}
 	return scope
+}
+
+func CheckScope(scopeUser []string, scopeCheck string) bool {
+	for _, v := range scopeUser {
+		if v == scopeCheck {
+			return true
+		}
+	}
+	return false
 }
 
 func ParseJwt(token string) (*Jwt, errors.Error) {
