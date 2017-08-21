@@ -2,13 +2,10 @@
 
 /*Package restapi User Management
 
-a service for user management.
-
-
     Schemes:
       http
     Host: localhost
-    BasePath: /v1/user/
+    BasePath: /v1/
     Version: 0.0.1
 
     Consumes:

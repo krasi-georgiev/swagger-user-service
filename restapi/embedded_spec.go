@@ -14,34 +14,204 @@ var SwaggerJSON json.RawMessage
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "schemes": [
     "http"
   ],
   "swagger": "2.0",
   "info": {
-    "description": "a service for user management.",
     "title": "User Management",
     "version": "0.0.1"
   },
-  "basePath": "/v1/user/",
+  "basePath": "/v1/",
   "paths": {
-    "/create": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "users"
-        ],
-        "summary": "creates a new user",
-        "security": [
+    "/user/2fa": {
+      "get": {
+        "summary": "generate qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app",
+        "responses": {
+          "200": {
+            "description": "A 2fa object.",
+            "schema": {
+              "properties": {
+                "qr": {
+                  "type": "string"
+                },
+                "secret": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "put": {
+        "summary": "enables 2fa on an account",
+        "parameters": [
           {
-            "swtAuth": []
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "f2a": {
+                  "type": "string"
+                }
+              }
+            }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "2fa enabled."
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "post": {
+        "summary": "used when the account is with 2 factor authentication enabled. use the login endpoint first to get the initial jwt token and than use this endpoint to get the second jwt token after providing a valid google authenticator code",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "jwt",
+                "f2a"
+              ],
+              "properties": {
+                "f2a": {
+                  "description": "the  2 factor time code accuired from the google authenticator app",
+                  "type": "string"
+                },
+                "jwt": {
+                  "description": "the jwt token accuired form the initial login",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the new jwt token that can be used for all endpoints.",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "disable 2 factor authenticaiton for an account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "id_profile",
+                "password"
+              ],
+              "properties": {
+                "id_profile": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "2fa disabled."
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "summary": "generates a swt token to use for authentication",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "example": {
+                "email": "admin@mail.com",
+                "password": "password"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A jwt token to use for authentication.",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "206": {
+            "description": "Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/management": {
+      "post": {
+        "summary": "creates a new user",
         "parameters": [
           {
             "name": "body",
@@ -57,7 +227,7 @@ func init() {
             "schema": {
               "type": "object",
               "properties": {
-                "idProfile": {
+                "id_profile": {
                   "type": "string"
                 }
               }
@@ -79,43 +249,32 @@ func init() {
             "$ref": "#/responses/DefaultError"
           }
         }
-      }
-    },
-    "/login": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "users"
-        ],
-        "summary": "get an swt token to access protected endpoints",
+      },
+      "delete": {
+        "summary": "deletes a user from the db",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/Profile"
+              "type": "object",
+              "required": [
+                "id_profile"
+              ],
+              "properties": {
+                "id_profile": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A token object.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
+            "description": "user deleted"
           },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -123,38 +282,36 @@ func init() {
         }
       }
     },
-    "/password": {
+    "/user/password": {
       "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "users"
-        ],
         "summary": "change or reset an user password",
-        "security": [
-          {
-            "swtAuth": []
-          }
-        ],
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/Profile"
+              "type": "object",
+              "required": [
+                "id_profile",
+                "password_new"
+              ],
+              "properties": {
+                "id_profile": {
+                  "type": "string"
+                },
+                "password_new": {
+                  "type": "string"
+                },
+                "password_old": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "shows a message if the password was set or sent with an email reminder.",
-            "schema": {
-              "$ref": "#/definitions/Response"
-            }
+            "description": "shows a message if the password was changed or sent with an email reminder."
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -164,23 +321,51 @@ func init() {
     }
   },
   "definitions": {
+    "Jwt": {
+      "type": "object",
+      "required": [
+        "jwt"
+      ],
+      "properties": {
+        "jwt": {
+          "type": "string"
+        }
+      }
+    },
     "Profile": {
       "type": "object",
       "required": [
         "email",
-        "pass"
+        "password"
       ],
       "properties": {
         "email": {
           "type": "string"
         },
-        "pass": {
+        "password": {
           "type": "string"
+        },
+        "tenant_id": {
+          "type": "string",
+          "default": "1",
+          "enum": [
+            "1"
+          ]
+        },
+        "user_type_id": {
+          "type": "string",
+          "default": "2",
+          "enum": [
+            "1",
+            "2"
+          ]
         }
       },
       "example": {
         "email": "admin@mail.com",
-        "pass": "password"
+        "password": "password",
+        "tenant_id": "1",
+        "user_type_id": "1"
       }
     },
     "Response": {
@@ -196,6 +381,10 @@ func init() {
         "message": {
           "type": "string"
         }
+      },
+      "example": {
+        "code": "500",
+        "message": "Server error"
       }
     }
   },
@@ -219,7 +408,7 @@ func init() {
       }
     },
     "UnauthorizedError": {
-      "description": "SWT key is missing or invalid",
+      "description": "Authentication is missing or invalid",
       "schema": {
         "$ref": "#/definitions/Response"
       }
@@ -229,19 +418,21 @@ func init() {
       "schema": {
         "$ref": "#/definitions/Response"
       }
+    },
+    "default": {
+      "$ref": "#/responses/DefaultError"
     }
   },
   "securityDefinitions": {
-    "swtAuth": {
+    "jwt": {
       "type": "apiKey",
-      "name": "x-token",
+      "name": "x-jwt",
       "in": "header"
     }
   },
-  "tags": [
+  "security": [
     {
-      "description": "user management",
-      "name": "users"
+      "jwt": []
     }
   ]
 }`))

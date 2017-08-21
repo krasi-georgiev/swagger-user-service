@@ -18,8 +18,6 @@ import (
 	spec "github.com/go-openapi/spec"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-
-	"github.com/choicehealth/user-service/restapi/operations/users"
 )
 
 // NewUserManagementAPI creates a new UserManagement instance
@@ -37,24 +35,39 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
-		UsersPostCreateHandler: users.PostCreateHandlerFunc(func(params users.PostCreateParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation UsersPostCreate has not yet been implemented")
+		DeleteUser2faHandler: DeleteUser2faHandlerFunc(func(params DeleteUser2faParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUser2fa has not yet been implemented")
 		}),
-		UsersPostLoginHandler: users.PostLoginHandlerFunc(func(params users.PostLoginParams) middleware.Responder {
-			return middleware.NotImplemented("operation UsersPostLogin has not yet been implemented")
+		DeleteUserManagementHandler: DeleteUserManagementHandlerFunc(func(params DeleteUserManagementParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUserManagement has not yet been implemented")
 		}),
-		UsersPostPasswordHandler: users.PostPasswordHandlerFunc(func(params users.PostPasswordParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation UsersPostPassword has not yet been implemented")
+		GetUser2faHandler: GetUser2faHandlerFunc(func(params GetUser2faParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUser2fa has not yet been implemented")
+		}),
+		PostUser2faHandler: PostUser2faHandlerFunc(func(params PostUser2faParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostUser2fa has not yet been implemented")
+		}),
+		PostUserLoginHandler: PostUserLoginHandlerFunc(func(params PostUserLoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserLogin has not yet been implemented")
+		}),
+		PostUserManagementHandler: PostUserManagementHandlerFunc(func(params PostUserManagementParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserManagement has not yet been implemented")
+		}),
+		PostUserPasswordHandler: PostUserPasswordHandlerFunc(func(params PostUserPasswordParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserPassword has not yet been implemented")
+		}),
+		PutUser2faHandler: PutUser2faHandlerFunc(func(params PutUser2faParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUser2fa has not yet been implemented")
 		}),
 
-		// Applies when the "x-token" header is set
-		SwtAuthAuth: func(token string) (interface{}, error) {
-			return nil, errors.NotImplemented("api key auth (swtAuth) x-token from header param [x-token] has not yet been implemented")
+		// Applies when the "x-jwt" header is set
+		JwtAuth: func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (jwt) x-jwt from header param [x-jwt] has not yet been implemented")
 		},
 	}
 }
 
-/*UserManagementAPI a service for user management. */
+/*UserManagementAPI the user management API */
 type UserManagementAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
@@ -80,16 +93,26 @@ type UserManagementAPI struct {
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer runtime.Producer
 
-	// SwtAuthAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key x-token provided in the header
-	SwtAuthAuth func(string) (interface{}, error)
+	// JwtAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key x-jwt provided in the header
+	JwtAuth func(string) (interface{}, error)
 
-	// UsersPostCreateHandler sets the operation handler for the post create operation
-	UsersPostCreateHandler users.PostCreateHandler
-	// UsersPostLoginHandler sets the operation handler for the post login operation
-	UsersPostLoginHandler users.PostLoginHandler
-	// UsersPostPasswordHandler sets the operation handler for the post password operation
-	UsersPostPasswordHandler users.PostPasswordHandler
+	// DeleteUser2faHandler sets the operation handler for the delete user2fa operation
+	DeleteUser2faHandler DeleteUser2faHandler
+	// DeleteUserManagementHandler sets the operation handler for the delete user management operation
+	DeleteUserManagementHandler DeleteUserManagementHandler
+	// GetUser2faHandler sets the operation handler for the get user2fa operation
+	GetUser2faHandler GetUser2faHandler
+	// PostUser2faHandler sets the operation handler for the post user2fa operation
+	PostUser2faHandler PostUser2faHandler
+	// PostUserLoginHandler sets the operation handler for the post user login operation
+	PostUserLoginHandler PostUserLoginHandler
+	// PostUserManagementHandler sets the operation handler for the post user management operation
+	PostUserManagementHandler PostUserManagementHandler
+	// PostUserPasswordHandler sets the operation handler for the post user password operation
+	PostUserPasswordHandler PostUserPasswordHandler
+	// PutUser2faHandler sets the operation handler for the put user2fa operation
+	PutUser2faHandler PutUser2faHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -153,20 +176,40 @@ func (o *UserManagementAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.SwtAuthAuth == nil {
-		unregistered = append(unregistered, "XTokenAuth")
+	if o.JwtAuth == nil {
+		unregistered = append(unregistered, "XJwtAuth")
 	}
 
-	if o.UsersPostCreateHandler == nil {
-		unregistered = append(unregistered, "users.PostCreateHandler")
+	if o.DeleteUser2faHandler == nil {
+		unregistered = append(unregistered, "DeleteUser2faHandler")
 	}
 
-	if o.UsersPostLoginHandler == nil {
-		unregistered = append(unregistered, "users.PostLoginHandler")
+	if o.DeleteUserManagementHandler == nil {
+		unregistered = append(unregistered, "DeleteUserManagementHandler")
 	}
 
-	if o.UsersPostPasswordHandler == nil {
-		unregistered = append(unregistered, "users.PostPasswordHandler")
+	if o.GetUser2faHandler == nil {
+		unregistered = append(unregistered, "GetUser2faHandler")
+	}
+
+	if o.PostUser2faHandler == nil {
+		unregistered = append(unregistered, "PostUser2faHandler")
+	}
+
+	if o.PostUserLoginHandler == nil {
+		unregistered = append(unregistered, "PostUserLoginHandler")
+	}
+
+	if o.PostUserManagementHandler == nil {
+		unregistered = append(unregistered, "PostUserManagementHandler")
+	}
+
+	if o.PostUserPasswordHandler == nil {
+		unregistered = append(unregistered, "PostUserPasswordHandler")
+	}
+
+	if o.PutUser2faHandler == nil {
+		unregistered = append(unregistered, "PutUser2faHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -188,9 +231,9 @@ func (o *UserManagementAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySc
 	for name, scheme := range schemes {
 		switch name {
 
-		case "swtAuth":
+		case "jwt":
 
-			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.SwtAuthAuth)
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.JwtAuth)
 
 		}
 	}
@@ -262,20 +305,45 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
 
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/create"] = users.NewPostCreate(o.context, o.UsersPostCreateHandler)
+	o.handlers["DELETE"]["/user/2fa"] = NewDeleteUser2fa(o.context, o.DeleteUser2faHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/user/management"] = NewDeleteUserManagement(o.context, o.DeleteUserManagementHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/user/2fa"] = NewGetUser2fa(o.context, o.GetUser2faHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/login"] = users.NewPostLogin(o.context, o.UsersPostLoginHandler)
+	o.handlers["POST"]["/user/2fa"] = NewPostUser2fa(o.context, o.PostUser2faHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/password"] = users.NewPostPassword(o.context, o.UsersPostPasswordHandler)
+	o.handlers["POST"]["/user/login"] = NewPostUserLogin(o.context, o.PostUserLoginHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user/management"] = NewPostUserManagement(o.context, o.PostUserManagementHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user/password"] = NewPostUserPassword(o.context, o.PostUserPasswordHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/2fa"] = NewPutUser2fa(o.context, o.PutUser2faHandler)
 
 }
 

@@ -1,54 +1,138 @@
 swagger: '2.0'
 info:
-  description: >-
-    a service for user management.
   version: 0.0.1
   title: User Management
-basePath: /v1/user/
-tags:
-  - name: users
-    description: user management
+basePath: /v1/
 schemes:
   - http
+produces:
+  - application/json
+consumes:
+  - application/json
+security:
+  - jwt: []
+responses:
+  default:
+    $ref: "#/responses/DefaultError"
 paths:
-  /login:
+  /user/login:
     post:
-      tags:
-        - users
-      summary: get an swt token to access protected endpoints
-      consumes:
-        - application/json
-      produces:
-        - application/json
+      security: []
+      summary: generates a swt token to use for authentication
       parameters:
         - in: body
           name: body
           schema:
-            $ref: "#/definitions/Profile"
+            type: object
+            required:
+            - "email"
+            - "password"
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+            example:
+                  email: "admin@mail.com"
+                  password: "password"
       responses:
         200:
-          description: A token object.
+          description: A jwt token to use for authentication.
           schema:
-            type: object
-            properties:
-              token:
-                type: string
+            $ref: "#/definitions/Jwt"
+        206:
+          description: Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.
+          schema:
+            $ref: "#/definitions/Jwt"
         404:
           $ref: "#/responses/NotFoundError"
         default:
           $ref: "#/responses/DefaultError"
-
-  /create:
+  /user/2fa:
+    delete:
+      summary: disable 2 factor authenticaiton for an account
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            required:
+            - "id_profile"
+            - "password"
+            properties:
+              id_profile:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          description: 2fa disabled.
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+    get:
+      summary: generate qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app
+      responses:
+        200:
+          description: A 2fa object.
+          schema:
+            properties:
+              qr:
+                type: string
+              secret:
+                type: string
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+    put:
+      summary: enables 2fa on an account
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              f2a:
+                type: string
+      responses:
+        200:
+          description: 2fa enabled.
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
     post:
-      security:
-        - swtAuth: []
-      tags:
-        - users
+      summary: used when the account is with 2 factor authentication enabled. use the login endpoint first to get the initial jwt token and than use this endpoint to get the second jwt token after providing a valid google authenticator code
+      security: []
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            required:
+            - jwt
+            - f2a
+            properties:
+              jwt:
+                type: string
+                description: the jwt token accuired form the initial login
+              f2a:
+                type: string
+                description: the  2 factor time code accuired from the google authenticator app
+      responses:
+        200:
+          description: the new jwt token that can be used for all endpoints.
+          schema:
+            $ref: "#/definitions/Jwt"
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+  /user/management:
+    post:
       summary: creates a new user
-      consumes:
-        - application/json
-      produces:
-        - application/json
       parameters:
         - in: body
           name: body
@@ -60,7 +144,7 @@ paths:
           schema:
             type: object
             properties:
-              idProfile:
+              id_profile:
                 type: string
         401:
           $ref: "#/responses/UnauthorizedError"
@@ -72,33 +156,52 @@ paths:
           $ref: "#/responses/ExpiredTokenError"
         default:
           $ref: "#/responses/DefaultError"
-
-  /password:
-    post:
-      security:
-        - swtAuth: []
-      tags:
-        - users
-      summary: change or reset an user password
-      consumes:
-        - application/json
-      produces:
-        - application/json
+    delete:
+      summary: deletes a user from the db
       parameters:
         - in: body
           name: body
           schema:
-            $ref: "#/definitions/Profile"
+            type: object
+            required:
+            - "id_profile"
+            properties:
+              id_profile:
+                type: string
       responses:
         200:
-          description: shows a message if the password was set or sent with an email reminder.
+          description: user deleted
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+
+  /user/password:
+    post:
+      summary: change or reset an user password
+      parameters:
+        - in: body
+          name: body
           schema:
-            $ref: "#/definitions/Response"
+            type: object
+            required:
+            - "id_profile"
+            - "password_new"
+            properties:
+              id_profile:
+                type: string
+              password_old:
+                type: string
+              password_new:
+                type: string
+      responses:
+        200:
+          description: shows a message if the password was changed or sent with an email reminder.
         default:
           $ref: "#/responses/DefaultError"
 responses:
   UnauthorizedError:
-    description: SWT key is missing or invalid
+    description: Authentication is missing or invalid
     schema:
       $ref: "#/definitions/Response"
   NotFoundError:
@@ -118,19 +221,39 @@ responses:
     schema:
       $ref: "#/definitions/Response"
 definitions:
+  Jwt:
+      type: object
+      required:
+      - "jwt"
+      properties:
+        jwt:
+          type: string
   Profile:
-      type: "object"
+      type: object
       required:
       - "email"
-      - "pass"
+      - "password"
       properties:
         email:
-          type: "string"
-        pass:
-          type: "string"
+          type: string
+        password:
+          type: string
+        user_type_id:
+          type: string
+          default: "2"
+          enum:
+            - "1" #admin
+            - "2" #user
+        tenant_id:
+          type: string
+          default: "1"
+          enum:
+            - "1"
       example:
             email: "admin@mail.com"
-            pass: "password"
+            password: "password"
+            user_type_id: "1" #admin
+            tenant_id: "1"
   Response:
     type: object
     properties:
@@ -141,8 +264,11 @@ definitions:
     required:
       - code
       - message
+    example:
+          code: "500"
+          message: "Server error"
 securityDefinitions:
-   swtAuth:
-     type: apiKey
-     in: header
-     name: x-token
+   jwt:
+    type: apiKey
+    in: header
+    name: x-jwt

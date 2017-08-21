@@ -3,15 +3,16 @@ openssl genrsa -out /tmp/app.rsa
 openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
 
 
-/v1
-	/user
-			/login
-			/create
-			/pass , reset , update(PATCH)
-
-JWT scopes
-
 TODO:
+	2fa - put to enable on the account
+	2fa - delete to disable 2fa on account - need to provide an existing password to disable
+
+	/user delete
+
+	/user/password
+		reset - send an email
+		change - enter the old one, new one  and if matched change
+
 
 	implement context cancelling
-	testing
+	testing ???
