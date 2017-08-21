@@ -190,9 +190,12 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			var id int
 			var user_type_id int
 			var password string
-			var f2a string
+			var f2a sql.NullString
 
-			rows.Scan(&id, &user_type_id, &password, &f2a)
+			if err := rows.Scan(&id, &user_type_id, &password, &f2a); err != nil {
+				log.Println(err)
+				return operations.NewPostUserLoginDefault(0)
+			}
 
 			if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Password)) == nil {
 				t := jwt.MapClaims{
@@ -202,7 +205,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				}
 				t["scope"] = SetScopes(user_type_id)
 
-				if f2a != "" { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
+				if f2a.Valid { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
 					t["f2a"] = "enabled"
 				}
 
@@ -211,7 +214,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				if err != nil {
 					return operations.NewPostUserLoginDefault(0)
 				}
-				if f2a != "" {
+				if f2a.Valid {
 					return operations.NewPostUserLoginPartialContent().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 				}
 				return operations.NewPostUserLoginOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
