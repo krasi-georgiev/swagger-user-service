@@ -16,6 +16,15 @@ paths:
   /user:
     get:
       summary: generates a list of users
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: limit
+          type: integer
+          description: The numbers of items to return
       responses:
         200:
           description:  full user list

@@ -7,7 +7,6 @@ openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
 
 TODO:
 
-	/user list all users
 	/user/management (PUT) - update an account
 	/user/password
 	/user/roles to list all roles ?? do we need that ?

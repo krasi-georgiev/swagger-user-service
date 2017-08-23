@@ -33,6 +33,20 @@ func init() {
     "/user": {
       "get": {
         "summary": "generates a list of users",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "The number of items to skip before starting to collect the result set",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "The numbers of items to return",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "full user list",

@@ -103,7 +103,16 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			username, f2a, created sql.NullString
 		)
 
-		rows, err := db.Query("select id, username,created,CASE WHEN f2a IS NULL THEN '0' ELSE '1' end as f2a from public.user;")
+		var limit string
+		if params.Limit != nil {
+			limit = " LIMIT " + strconv.Itoa(int(*params.Limit))
+		}
+		var offset string
+		if params.Offset != nil {
+			offset = " OFFSET " + strconv.Itoa(int(*params.Offset))
+		}
+
+		rows, err := db.Query("select id, username,created,CASE WHEN f2a IS NULL THEN '0' ELSE '1' end as f2a from public.user" + limit + offset + ";")
 		if err != nil {
 			log.Println(err)
 			return operations.NewGetUserDefault(0)
