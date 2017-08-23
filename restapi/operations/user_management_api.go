@@ -41,6 +41,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		DeleteUserManagementHandler: DeleteUserManagementHandlerFunc(func(params DeleteUserManagementParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation DeleteUserManagement has not yet been implemented")
 		}),
+		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUser has not yet been implemented")
+		}),
 		GetUser2faHandler: GetUser2faHandlerFunc(func(params GetUser2faParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation GetUser2fa has not yet been implemented")
 		}),
@@ -101,6 +104,8 @@ type UserManagementAPI struct {
 	DeleteUser2faHandler DeleteUser2faHandler
 	// DeleteUserManagementHandler sets the operation handler for the delete user management operation
 	DeleteUserManagementHandler DeleteUserManagementHandler
+	// GetUserHandler sets the operation handler for the get user operation
+	GetUserHandler GetUserHandler
 	// GetUser2faHandler sets the operation handler for the get user2fa operation
 	GetUser2faHandler GetUser2faHandler
 	// PostUser2faHandler sets the operation handler for the post user2fa operation
@@ -186,6 +191,10 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.DeleteUserManagementHandler == nil {
 		unregistered = append(unregistered, "DeleteUserManagementHandler")
+	}
+
+	if o.GetUserHandler == nil {
+		unregistered = append(unregistered, "GetUserHandler")
 	}
 
 	if o.GetUser2faHandler == nil {
@@ -314,6 +323,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/user/management"] = NewDeleteUserManagement(o.context, o.DeleteUserManagementHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/user"] = NewGetUser(o.context, o.GetUserHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

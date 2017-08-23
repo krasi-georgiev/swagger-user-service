@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	qr "github.com/qpliu/qrencode-go/qrencode"
@@ -98,16 +97,39 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		return t, nil
 	}
 
+	api.GetUserHandler = operations.GetUserHandlerFunc(func(params operations.GetUserParams, principal interface{}) middleware.Responder {
+		var (
+			id                     int
+			username, f2a, created sql.NullString
+		)
+
+		rows, err := db.Query("select id, username,created,CASE WHEN f2a IS NULL THEN '0' ELSE '1' end as f2a from public.user;")
+		if err != nil {
+			log.Println(err)
+			return operations.NewGetUserDefault(0)
+		}
+		var users []*operations.GetUserOKBodyItems0
+		for rows.Next() {
+			if err := rows.Scan(&id, &username, &created, &f2a); err != nil {
+				log.Println(err)
+				return operations.NewGetUserDefault(0)
+			}
+			users = append(users, &operations.GetUserOKBodyItems0{Created: created.String, F2a: f2a.String, ID: strconv.Itoa(id), Username: username.String})
+
+		}
+		return operations.NewGetUserOK().WithPayload(users)
+	})
+
 	api.PostUserManagementHandler = operations.PostUserManagementHandlerFunc(func(params operations.PostUserManagementParams, principal interface{}) middleware.Responder {
 
-		j, ok := principal.(*Jwt)
+		_, ok := principal.(*Jwt)
 		if !ok {
 			operations.NewPostUserManagementDefault(0)
 		}
 		// check if can create users
-		if !CheckScope(j.Scope, "createUser") {
-			return operations.NewPostUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
-		}
+		// if !CheckScope(j.Scope, "createUser") {
+		// 	return operations.NewPostUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
+		// }
 		rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Email)
 		if err != nil {
 			log.Println(err)
@@ -150,14 +172,14 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	})
 	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
-		j, ok := principal.(*Jwt)
+		_, ok := principal.(*Jwt)
 		if !ok {
 			operations.NewDeleteUserManagementDefault(0)
 		}
 		// check if can delete users
-		if !CheckScope(j.Scope, "deleteUser") {
-			return operations.NewDeleteUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user delete scope")})
-		}
+		// if !CheckScope(j.Scope, "deleteUser") {
+		// 	return operations.NewDeleteUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user delete scope")})
+		// }
 
 		id_profile, err := strconv.Atoi(*params.Body.IDProfile)
 
@@ -531,12 +553,12 @@ func ParseJwt(token string) (*Jwt, errors.Error) {
 	// 	log.Println("parsing user type error:", err)
 	// 	return nil, errors.New(500, "system error")
 	// }
-	if scope, ok := t.Claims.(jwt.MapClaims)["scope"].(string); ok {
-		j.Scope = strings.Split(scope, ",")
-	} else {
-		log.Println("parsing user scopes error:", err)
-		return nil, errors.New(500, "system error")
-	}
+	// if scope, ok := t.Claims.(jwt.MapClaims)["scope"].(string); ok {
+	// 	j.Scope = strings.Split(scope, ",")
+	// } else {
+	// 	log.Println("parsing user scopes error:", err)
+	// 	return nil, errors.New(500, "system error")
+	// }
 	if s, ok := t.Claims.(jwt.MapClaims)["f2a"].(string); ok && s != "" {
 		j.F2a = true
 	}

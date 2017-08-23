@@ -11,7 +11,28 @@ consumes:
   - application/json
 security:
   - jwt: []
+
 paths:
+  /user:
+    get:
+      summary: generates a list of users
+      responses:
+        200:
+          description:  full user list
+          schema:
+            type: array
+            items:
+              properties:
+                id:
+                  type: string
+                username:
+                  type: string
+                created:
+                  type: string
+                f2a:
+                  type: string
+        default:
+          $ref: "#/responses/DefaultError"
   /user/login:
     post:
       security: []

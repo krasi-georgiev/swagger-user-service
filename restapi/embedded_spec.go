@@ -30,6 +30,38 @@ func init() {
   },
   "basePath": "/v1/",
   "paths": {
+    "/user": {
+      "get": {
+        "summary": "generates a list of users",
+        "responses": {
+          "200": {
+            "description": "full user list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "created": {
+                    "type": "string"
+                  },
+                  "f2a": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
     "/user/2fa": {
       "get": {
         "summary": "generate qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app",
@@ -438,9 +470,6 @@ func init() {
       "schema": {
         "$ref": "#/definitions/Response"
       }
-    },
-    "default": {
-      "$ref": "#/responses/DefaultError"
     }
   },
   "securityDefinitions": {
