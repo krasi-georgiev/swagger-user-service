@@ -11,9 +11,6 @@ consumes:
   - application/json
 security:
   - jwt: []
-responses:
-  default:
-    $ref: "#/responses/DefaultError"
 paths:
   /user/login:
     post:
