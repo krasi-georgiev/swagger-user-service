@@ -405,6 +405,9 @@ func init() {
         "password"
       ],
       "properties": {
+        "email": {
+          "type": "string"
+        },
         "password": {
           "type": "string"
         },

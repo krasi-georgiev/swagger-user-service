@@ -19,6 +19,9 @@ import (
 // swagger:model Profile
 type Profile struct {
 
+	// email
+	Email string `json:"email,omitempty"`
+
 	// password
 	// Required: true
 	Password *string `json:"password"`

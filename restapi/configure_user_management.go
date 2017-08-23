@@ -149,9 +149,14 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		for rows.Next() {
 			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("user already exists")})
 		}
-		e, err := mail.ParseAddress(*params.Body.Username)
-		if err != nil {
-			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("invalid email")})
+
+		email := ""
+		if params.Body.Email != "" {
+			e, err := mail.ParseAddress(params.Body.Email)
+			if err != nil {
+				return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("invalid email")})
+			}
+			email = e.Address
 		}
 
 		var id int64
@@ -161,7 +166,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			log.Println(err)
 		}
 
-		err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", e.Address, hashedPassword, *params.Body.UserTypeID, *params.Body.TenantID).Scan(&id)
+		err = db.QueryRow("INSERT INTO public.user (username,email, password,tenant_id,created)	VALUES ($1, $2, $3, $4,$5)	RETURNING id", *params.Body.Username, email, hashedPassword, *params.Body.TenantID, time.Now()).Scan(&id)
 		if err != nil {
 			operations.NewPostUserManagementDefault(0)
 			log.Println(err)

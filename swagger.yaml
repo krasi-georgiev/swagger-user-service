@@ -281,6 +281,8 @@ definitions:
           type: string
         password:
           type: string
+        email:
+          type: string
         user_type_id:
           type: integer
           default: 2
@@ -293,7 +295,8 @@ definitions:
           enum:
             - 1
       example:
-            username: "admin@mail.com"
+            username: "username"
+            email: "admin@mail.com"
             password: "password"
             user_type_id: 1 #admin
             tenant_id: 1
