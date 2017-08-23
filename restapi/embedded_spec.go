@@ -58,10 +58,10 @@ func init() {
                     "type": "string"
                   },
                   "f2a": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "id": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "username": {
                     "type": "string"
@@ -227,7 +227,7 @@ func init() {
               "type": "object",
               "properties": {
                 "id_profile": {
-                  "type": "string"
+                  "type": "integer"
                 }
               }
             }
@@ -262,7 +262,7 @@ func init() {
               ],
               "properties": {
                 "id_profile": {
-                  "type": "string"
+                  "type": "integer"
                 }
               }
             }
@@ -299,7 +299,7 @@ func init() {
               ],
               "properties": {
                 "id_profile": {
-                  "type": "string"
+                  "type": "integer"
                 },
                 "password_new": {
                   "type": "string"
@@ -382,56 +382,56 @@ func init() {
     "Login": {
       "type": "object",
       "required": [
-        "email",
+        "username",
         "password"
       ],
       "properties": {
-        "email": {
+        "password": {
           "type": "string"
         },
-        "password": {
+        "username": {
           "type": "string"
         }
       },
       "example": {
-        "email": "admin@mail.com",
-        "password": "password"
+        "password": "password",
+        "username": "admin@mail.com"
       }
     },
     "Profile": {
       "type": "object",
       "required": [
-        "email",
+        "username",
         "password"
       ],
       "properties": {
-        "email": {
-          "type": "string"
-        },
         "password": {
           "type": "string"
         },
         "tenant_id": {
-          "type": "string",
-          "default": "1",
+          "type": "integer",
+          "default": 1,
           "enum": [
-            "1"
+            1
           ]
         },
         "user_type_id": {
-          "type": "string",
-          "default": "2",
+          "type": "integer",
+          "default": 2,
           "enum": [
-            "1",
-            "2"
+            1,
+            2
           ]
+        },
+        "username": {
+          "type": "string"
         }
       },
       "example": {
-        "email": "admin@mail.com",
         "password": "password",
-        "tenant_id": "1",
-        "user_type_id": "1"
+        "tenant_id": 1,
+        "user_type_id": 1,
+        "username": "admin@mail.com"
       }
     },
     "Response": {
@@ -442,7 +442,7 @@ func init() {
       ],
       "properties": {
         "code": {
-          "type": "string"
+          "type": "integer"
         },
         "message": {
           "type": "string"

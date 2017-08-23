@@ -80,7 +80,7 @@ type PostUserManagementOKBody struct {
 
 	// id profile
 	// Required: true
-	IDProfile *string `json:"id_profile"`
+	IDProfile *int64 `json:"id_profile"`
 }
 
 // Validate validates this post user management o k body

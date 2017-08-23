@@ -77,7 +77,7 @@ type DeleteUserManagementBody struct {
 
 	// id profile
 	// Required: true
-	IDProfile *string `json:"id_profile"`
+	IDProfile *int64 `json:"id_profile"`
 }
 
 // MarshalBinary interface implementation

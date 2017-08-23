@@ -33,13 +33,13 @@ paths:
             items:
               properties:
                 id:
-                  type: string
+                  type: integer
                 username:
                   type: string
                 created:
                   type: string
                 f2a:
-                  type: string
+                  type: integer
         default:
           $ref: "#/responses/DefaultError"
   /user/login:
@@ -142,7 +142,7 @@ paths:
             type: object
             properties:
               id_profile:
-                type: string
+                type: integer
         401:
           $ref: "#/responses/UnauthorizedError"
         404:
@@ -161,10 +161,10 @@ paths:
           schema:
             type: object
             required:
-            - "id_profile"
+            - id_profile
             properties:
               id_profile:
-                type: string
+                type: integer
       responses:
         200:
           description: user deleted
@@ -188,7 +188,7 @@ paths:
             - "password_new"
             properties:
               id_profile:
-                type: string
+                type: integer
               password_old:
                 type: string
               password_new:
@@ -242,7 +242,7 @@ definitions:
   F2aDisable:
       type: object
       required:
-      - "password"
+      - password
       properties:
         password:
           type: string
@@ -261,47 +261,47 @@ definitions:
   Login:
       type: object
       required:
-        - "email"
-        - "password"
+        - username
+        - password
       properties:
-        email:
+        username:
           type: string
         password:
           type: string
       example:
-            email: "admin@mail.com"
+            username: "admin@mail.com"
             password: "password"
   Profile:
       type: object
       required:
-      - "email"
-      - "password"
+      - username
+      - password
       properties:
-        email:
+        username:
           type: string
         password:
           type: string
         user_type_id:
-          type: string
-          default: "2"
+          type: integer
+          default: 2
           enum:
-            - "1" #admin
-            - "2" #user
+            - 1 #admin
+            - 2 #user
         tenant_id:
-          type: string
-          default: "1"
+          type: integer
+          default: 1
           enum:
-            - "1"
+            - 1
       example:
-            email: "admin@mail.com"
+            username: "admin@mail.com"
             password: "password"
-            user_type_id: "1" #admin
-            tenant_id: "1"
+            user_type_id: 1 #admin
+            tenant_id: 1
   Response:
     type: object
     properties:
       code:
-        type: string
+        type: integer
       message:
         type: string
     required:

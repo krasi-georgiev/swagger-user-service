@@ -99,8 +99,8 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.GetUserHandler = operations.GetUserHandlerFunc(func(params operations.GetUserParams, principal interface{}) middleware.Responder {
 		var (
-			id                     int
-			username, f2a, created sql.NullString
+			f2a, id           int64
+			username, created sql.NullString
 		)
 
 		var limit string
@@ -112,7 +112,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			offset = " OFFSET " + strconv.Itoa(int(*params.Offset))
 		}
 
-		rows, err := db.Query("select id, username,created,CASE WHEN f2a IS NULL THEN '0' ELSE '1' end as f2a from public.user" + limit + offset + ";")
+		rows, err := db.Query("select id, username,created,CASE WHEN f2a IS NULL THEN -1 ELSE 1 end as f2a from public.user" + limit + offset + ";")
 		if err != nil {
 			log.Println(err)
 			return operations.NewGetUserDefault(0)
@@ -123,7 +123,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				log.Println(err)
 				return operations.NewGetUserDefault(0)
 			}
-			users = append(users, &operations.GetUserOKBodyItems0{Created: created.String, F2a: f2a.String, ID: strconv.Itoa(id), Username: username.String})
+			users = append(users, &operations.GetUserOKBodyItems0{Created: created.String, F2a: f2a, ID: id, Username: username.String})
 
 		}
 		return operations.NewGetUserOK().WithPayload(users)
@@ -139,7 +139,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		// if !CheckScope(j.Scope, "createUser") {
 		// 	return operations.NewPostUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
 		// }
-		rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Email)
+		rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Username)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserManagementDefault(0)
@@ -147,37 +147,26 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		defer rows.Close()
 
 		for rows.Next() {
-			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("user already exists")})
+			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("user already exists")})
 		}
-		e, err := mail.ParseAddress(*params.Body.Email)
+		e, err := mail.ParseAddress(*params.Body.Username)
 		if err != nil {
-			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.String("409"), Message: swag.String("invalid email")})
+			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("invalid email")})
 		}
 
-		var id int
+		var id int64
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Password), bcrypt.DefaultCost)
 		if err != nil {
 			operations.NewPostUserManagementDefault(0)
 			log.Println(err)
 		}
 
-		role, err := strconv.Atoi(*params.Body.UserTypeID)
+		err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", e.Address, hashedPassword, *params.Body.UserTypeID, *params.Body.TenantID).Scan(&id)
 		if err != nil {
 			operations.NewPostUserManagementDefault(0)
 			log.Println(err)
 		}
-
-		tenant, err := strconv.Atoi(*params.Body.TenantID)
-		if err != nil {
-			operations.NewPostUserManagementDefault(0)
-			log.Println(err)
-		}
-		err = db.QueryRow("INSERT INTO public.user (username, password,user_type_id,tenant_id)	VALUES ($1, $2, $3, $4)	RETURNING id", e.Address, hashedPassword, role, tenant).Scan(&id)
-		if err != nil {
-			operations.NewPostUserManagementDefault(0)
-			log.Println(err)
-		}
-		return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: swag.String(strconv.Itoa(id))})
+		return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: &id})
 
 	})
 	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
@@ -190,26 +179,24 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		// 	return operations.NewDeleteUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user delete scope")})
 		// }
 
-		id_profile, err := strconv.Atoi(*params.Body.IDProfile)
-
-		if err != nil || id_profile < 1 {
-			return operations.NewDeleteUserManagementDefault(400).WithPayload(&models.Response{Code: swag.String("400"), Message: swag.String("invalid profile id")})
+		if *params.Body.IDProfile < 1 {
+			return operations.NewDeleteUserManagementDefault(400).WithPayload(&models.Response{Code: swag.Int64(400), Message: swag.String("invalid profile id")})
 		}
 
-		result, err := db.Exec("DELETE FROM public.user WHERE id=$1 ;", id_profile)
+		result, err := db.Exec("DELETE FROM public.user WHERE id=$1 ;", *params.Body.IDProfile)
 		if err != nil {
 			log.Println(err)
 			return operations.NewDeleteUserManagementDefault(0)
 		}
 		if count, err := result.RowsAffected(); err != nil || count == 0 {
-			return operations.NewDeleteUserManagementNotFound().WithPayload((&models.Response{Code: swag.String("404"), Message: swag.String("user with this id doesn't exist")}))
+			return operations.NewDeleteUserManagementNotFound().WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("user with this id doesn't exist")}))
 		}
 
 		return operations.NewDeleteUserManagementOK()
 	})
 
 	api.PostUserLoginHandler = operations.PostUserLoginHandlerFunc(func(params operations.PostUserLoginParams) middleware.Responder {
-		rows, err := db.Query("SELECT id,password,f2a FROM public.user WHERE username=$1", params.Body.Email)
+		rows, err := db.Query("SELECT id,password,f2a FROM public.user WHERE username=$1", params.Body.Username)
 
 		if err != nil {
 			log.Println(err)
@@ -319,7 +306,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			}
 			return operations.NewPutUser2faOK()
 		}
-		return operations.NewPutUser2faUnauthorized().WithPayload((&models.Response{Code: swag.String("401"), Message: swag.String("mismatched 2 factor code")}))
+		return operations.NewPutUser2faUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("mismatched 2 factor code")}))
 
 	})
 
@@ -328,7 +315,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		var tt *Jwt
 		if t, err := ParseJwt(*params.Body.Jwt); err != nil {
 			log.Println(err)
-			return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.String(strconv.Itoa(int(err.Code()))), Message: swag.String(err.Error())})
+			return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.Int64(int64(err.Code())), Message: swag.String(err.Error())})
 		} else {
 			tt = t
 		}
@@ -363,7 +350,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			}
 			return operations.NewPostUser2faOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 		}
-		return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("invalid 2fa token")})
+		return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.Int64(401), Message: swag.String("invalid 2fa token")})
 
 	})
 

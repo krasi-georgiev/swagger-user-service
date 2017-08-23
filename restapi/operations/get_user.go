@@ -81,10 +81,10 @@ type GetUserOKBodyItems0 struct {
 	Created string `json:"created,omitempty"`
 
 	// f2a
-	F2a string `json:"f2a,omitempty"`
+	F2a int64 `json:"f2a,omitempty"`
 
 	// id
-	ID string `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 
 	// username
 	Username string `json:"username,omitempty"`

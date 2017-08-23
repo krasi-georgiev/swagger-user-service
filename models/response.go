@@ -19,7 +19,7 @@ type Response struct {
 
 	// code
 	// Required: true
-	Code *string `json:"code"`
+	Code *int64 `json:"code"`
 
 	// message
 	// Required: true

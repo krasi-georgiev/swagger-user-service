@@ -17,25 +17,25 @@ import (
 // swagger:model Login
 type Login struct {
 
-	// email
-	// Required: true
-	Email *string `json:"email"`
-
 	// password
 	// Required: true
 	Password *string `json:"password"`
+
+	// username
+	// Required: true
+	Username *string `json:"username"`
 }
 
 // Validate validates this login
 func (m *Login) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateEmail(formats); err != nil {
+	if err := m.validatePassword(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
-	if err := m.validatePassword(formats); err != nil {
+	if err := m.validateUsername(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -46,18 +46,18 @@ func (m *Login) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Login) validateEmail(formats strfmt.Registry) error {
+func (m *Login) validatePassword(formats strfmt.Registry) error {
 
-	if err := validate.Required("email", "body", m.Email); err != nil {
+	if err := validate.Required("password", "body", m.Password); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *Login) validatePassword(formats strfmt.Registry) error {
+func (m *Login) validateUsername(formats strfmt.Registry) error {
 
-	if err := validate.Required("password", "body", m.Password); err != nil {
+	if err := validate.Required("username", "body", m.Username); err != nil {
 		return err
 	}
 

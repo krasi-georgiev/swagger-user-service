@@ -19,29 +19,24 @@ import (
 // swagger:model Profile
 type Profile struct {
 
-	// email
-	// Required: true
-	Email *string `json:"email"`
-
 	// password
 	// Required: true
 	Password *string `json:"password"`
 
 	// tenant id
-	TenantID *string `json:"tenant_id,omitempty"`
+	TenantID *int64 `json:"tenant_id,omitempty"`
 
 	// user type id
-	UserTypeID *string `json:"user_type_id,omitempty"`
+	UserTypeID *int64 `json:"user_type_id,omitempty"`
+
+	// username
+	// Required: true
+	Username *string `json:"username"`
 }
 
 // Validate validates this profile
 func (m *Profile) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateEmail(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
 
 	if err := m.validatePassword(formats); err != nil {
 		// prop
@@ -58,18 +53,14 @@ func (m *Profile) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateUsername(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Profile) validateEmail(formats strfmt.Registry) error {
-
-	if err := validate.Required("email", "body", m.Email); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -85,8 +76,8 @@ func (m *Profile) validatePassword(formats strfmt.Registry) error {
 var profileTypeTenantIDPropEnum []interface{}
 
 func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["1"]`), &res); err != nil {
+	var res []int64
+	if err := json.Unmarshal([]byte(`[1]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -94,13 +85,8 @@ func init() {
 	}
 }
 
-const (
-	// ProfileTenantIDNr1 captures enum value "1"
-	ProfileTenantIDNr1 string = "1"
-)
-
 // prop value enum
-func (m *Profile) validateTenantIDEnum(path, location string, value string) error {
+func (m *Profile) validateTenantIDEnum(path, location string, value int64) error {
 	if err := validate.Enum(path, location, value, profileTypeTenantIDPropEnum); err != nil {
 		return err
 	}
@@ -124,8 +110,8 @@ func (m *Profile) validateTenantID(formats strfmt.Registry) error {
 var profileTypeUserTypeIDPropEnum []interface{}
 
 func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["1","2"]`), &res); err != nil {
+	var res []int64
+	if err := json.Unmarshal([]byte(`[1,2]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -133,15 +119,8 @@ func init() {
 	}
 }
 
-const (
-	// ProfileUserTypeIDNr1 captures enum value "1"
-	ProfileUserTypeIDNr1 string = "1"
-	// ProfileUserTypeIDNr2 captures enum value "2"
-	ProfileUserTypeIDNr2 string = "2"
-)
-
 // prop value enum
-func (m *Profile) validateUserTypeIDEnum(path, location string, value string) error {
+func (m *Profile) validateUserTypeIDEnum(path, location string, value int64) error {
 	if err := validate.Enum(path, location, value, profileTypeUserTypeIDPropEnum); err != nil {
 		return err
 	}
@@ -156,6 +135,15 @@ func (m *Profile) validateUserTypeID(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateUserTypeIDEnum("user_type_id", "body", *m.UserTypeID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Profile) validateUsername(formats strfmt.Registry) error {
+
+	if err := validate.Required("username", "body", m.Username); err != nil {
 		return err
 	}
 
