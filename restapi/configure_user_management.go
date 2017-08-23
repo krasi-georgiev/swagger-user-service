@@ -178,7 +178,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	})
 
 	api.PostUserLoginHandler = operations.PostUserLoginHandlerFunc(func(params operations.PostUserLoginParams) middleware.Responder {
-		rows, err := db.Query("SELECT id,user_type_id,password,f2a FROM public.user WHERE username=$1", params.Body.Email)
+		rows, err := db.Query("SELECT id,password,f2a FROM public.user WHERE username=$1", params.Body.Email)
 
 		if err != nil {
 			log.Println(err)
@@ -188,22 +188,20 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		for rows.Next() {
 			var id int
-			var user_type_id int
 			var password string
 			var f2a sql.NullString
 
-			if err := rows.Scan(&id, &user_type_id, &password, &f2a); err != nil {
+			if err := rows.Scan(&id, &password, &f2a); err != nil {
 				log.Println(err)
 				return operations.NewPostUserLoginDefault(0)
 			}
 
 			if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Password)) == nil {
 				t := jwt.MapClaims{
-					"exp":          time.Now().Add(time.Hour * 240).Unix(),
-					"id_profile":   strconv.Itoa(id),
-					"user_type_id": strconv.Itoa(user_type_id),
+					"exp":        time.Now().Add(time.Hour * 240).Unix(),
+					"id_profile": strconv.Itoa(id),
 				}
-				t["scope"] = SetScopes(user_type_id)
+				// t["scope"] = SetScopes(user_type_id)
 
 				if f2a.Valid { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
 					t["f2a"] = "enabled"
@@ -321,11 +319,11 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 			// now generate a new jwt token without the 2fa lock
 			t := jwt.MapClaims{
-				"exp":          time.Now().Add(time.Hour * 240).Unix(),
-				"id_profile":   strconv.Itoa(tt.Id_profile),
-				"user_type_id": strconv.Itoa(tt.User_type_id),
+				"exp":        time.Now().Add(time.Hour * 240).Unix(),
+				"id_profile": strconv.Itoa(tt.Id_profile),
+				// "user_type_id": strconv.Itoa(tt.User_type_id),
 			}
-			t["scope"] = SetScopes(tt.User_type_id)
+			// t["scope"] = SetScopes(tt.User_type_id)
 
 			token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
 			tt, err := token.SignedString(signKey)
@@ -527,12 +525,12 @@ func ParseJwt(token string) (*Jwt, errors.Error) {
 		log.Println("parsing user id error:", err)
 		return nil, errors.New(500, "system error")
 	}
-	if user_type_id, err := strconv.Atoi(t.Claims.(jwt.MapClaims)["user_type_id"].(string)); err == nil {
-		j.User_type_id = user_type_id
-	} else {
-		log.Println("parsing user type error:", err)
-		return nil, errors.New(500, "system error")
-	}
+	// if user_type_id, err := strconv.Atoi(t.Claims.(jwt.MapClaims)["user_type_id"].(string)); err == nil {
+	// 	j.User_type_id = user_type_id
+	// } else {
+	// 	log.Println("parsing user type error:", err)
+	// 	return nil, errors.New(500, "system error")
+	// }
 	if scope, ok := t.Claims.(jwt.MapClaims)["scope"].(string); ok {
 		j.Scope = strings.Split(scope, ",")
 	} else {
