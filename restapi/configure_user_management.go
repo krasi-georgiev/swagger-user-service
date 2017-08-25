@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"image/png"
@@ -224,7 +225,12 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 					"exp":        time.Now().Add(time.Hour * 240).Unix(),
 					"id_profile": strconv.Itoa(id),
 				}
-				// t["scope"] = SetScopes(user_type_id)
+				t["scope"], err = setScopes(id)
+
+				if err != nil {
+					log.Println(err)
+					return operations.NewPostUserLoginDefault(0)
+				}
 
 				if f2a.Valid { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
 					t["f2a"] = "enabled"
@@ -346,7 +352,10 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				"id_profile": strconv.Itoa(tt.Id_profile),
 				// "user_type_id": strconv.Itoa(tt.User_type_id),
 			}
-			// t["scope"] = SetScopes(tt.User_type_id)
+			t["scope"], err = setScopes(tt.Id_profile)
+			if err != nil {
+				return operations.NewPutUser2faDefault(0)
+			}
 
 			token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
 			tt, err := token.SignedString(signKey)
@@ -497,13 +506,125 @@ func GetCurrent2faCode(secretKey string) (string, int64, error) {
 	return fmt.Sprintf("%06d", code), x, nil
 }
 
-func SetScopes(user_type_id int) string {
-	scope := "browse"
-	switch user_type_id {
-	case 1: //admin
-		scope = scope + ",createUser,deleteUser"
+func setScopes(userId int) (*string, error) {
+
+	menus, err := db.Query(`
+	SELECT distinct
+		menu.id,
+		menu.name,
+		menu.url,
+		menu.parent_menu
+	FROM menu
+		INNER JOIN tab_to_menu on (tab_to_menu.menu_id = menu.id)
+		INNER JOIN resource_to_tab on (resource_to_tab.tab_id = tab_to_menu.tab_id)
+		INNER JOIN role_to_resource on (role_to_resource.resource_id = resource_to_tab.resource_id)
+		INNER JOIN user_role on (user_role.role_id = role_to_resource.role_id)
+	WHERE user_id = $1;`, userId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
 	}
-	return scope
+
+	var menuArray []struct {
+		Id     int
+		Name   string
+		Url    string
+		Parent int
+	}
+
+	var (
+		id     int
+		name   sql.NullString
+		url    sql.NullString
+		parent int
+	)
+	for menus.Next() {
+
+		if err := menus.Scan(&id, &name, &url, &parent); err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		menuArray = append(menuArray, struct {
+			Id     int
+			Name   string
+			Url    string
+			Parent int
+		}{
+			id,
+			name.String,
+			url.String,
+			parent,
+		})
+
+	}
+
+	tabs, err := db.Query(`
+	SELECT tab.id,tab.name,tab.url
+	FROM tab
+	 INNER JOIN resource_to_tab on (resource_to_tab.tab_id = tab.id)
+	 INNER JOIN role_to_resource on (role_to_resource.resource_id = resource_to_tab.resource_id)
+	 INNER JOIN user_role on (user_role.role_id = role_to_resource.role_id)
+	WHERE user_id = $1;`, userId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var tabArray []struct {
+		Id   int
+		Name string
+		Url  string
+	}
+
+	for tabs.Next() {
+
+		if err := tabs.Scan(&id, &name, &url); err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		tabArray = append(tabArray, struct {
+			Id   int
+			Name string
+			Url  string
+		}{
+			id,
+			name.String,
+			url.String,
+		})
+	}
+
+	roles, err := db.Query(`
+			SELECT role_id
+			FROM "user" INNER JOIN "user_role" on (user_role.user_id ="user".id)
+			WHERE "user".id = $1;`, userId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var roleArray []int
+
+	for roles.Next() {
+
+		if err := roles.Scan(&id); err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		roleArray = append(roleArray, id)
+	}
+
+	s := &Scope{}
+	s.Menus = menuArray
+	s.Tabs = tabArray
+	s.Role = roleArray
+	json, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+	return swag.String(string(json)), nil
 }
 
 func CheckScope(scopeUser []string, scopeCheck string) bool {
@@ -570,5 +691,20 @@ func ParseJwt(token string) (*Jwt, errors.Error) {
 type Jwt struct {
 	Id_profile, User_type_id int
 	F2a                      bool
-	Scope                    []string
+	Scope                    Scope
+}
+
+type Scope struct {
+	Role  []int
+	Menus []struct {
+		Id     int
+		Name   string
+		Url    string
+		Parent int
+	}
+	Tabs []struct {
+		Id   int
+		Name string
+		Url  string
+	}
 }

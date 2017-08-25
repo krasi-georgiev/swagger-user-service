@@ -431,10 +431,11 @@ func init() {
         }
       },
       "example": {
+        "email": "admin@mail.com",
         "password": "password",
         "tenant_id": 1,
         "user_type_id": 1,
-        "username": "admin@mail.com"
+        "username": "username"
       }
     },
     "Response": {
