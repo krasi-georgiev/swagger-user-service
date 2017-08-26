@@ -61,6 +61,10 @@ paths:
           description: Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.
           schema:
             $ref: "#/definitions/Jwt"
+        201:
+          description: Password change is required, hit the password reset endpoint with the generated jwt token
+          schema:
+            $ref: "#/definitions/Jwt"
         404:
           $ref: "#/responses/NotFoundError"
         default:
@@ -177,25 +181,32 @@ paths:
 
   /user/password:
     post:
-      summary: change or reset an user password
+      summary: reset an user password, when old password is not provided the user will be required to change its password upon next login using a temporary password provided by an admin
       parameters:
         - in: body
           name: body
           schema:
-            type: object
-            required:
-            - "id_profile"
-            - "password_new"
-            properties:
-              id_profile:
-                type: integer
-              password_old:
-                type: string
-              password_new:
-                type: string
+            $ref: "#/definitions/PassReset"
       responses:
         200:
-          description: shows a message if the password was changed or sent with an email reminder.
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        404:
+          $ref: "#/responses/NotFoundError"
+        default:
+          $ref: "#/responses/DefaultError"
+    put:
+      summary: resets an user password using a temporary password provided by an admin, once reset you can login as normal using the new password
+      security: []
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: "#/definitions/PassResetTemp"
+      responses:
+        200:
+        401:
+          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
 responses:
@@ -239,6 +250,30 @@ definitions:
         f2a:
           type: string
           description: the  2 factor time code accuired from the google authenticator app
+  PassReset:
+      type: object
+      required:
+      - "id_profile"
+      - "password_new"
+      properties:
+        id_profile:
+          type: integer
+        password_old:
+          type: string
+        password_new:
+          type: string
+  PassResetTemp:
+      type: object
+      required:
+      - jwt
+      - passwordNew
+      properties:
+        jwt:
+          type: string
+          description: the jwt token accuired form the initial login
+        passwordNew:
+          type: string
+          description: the new password for this user
   F2aDisable:
       type: object
       required:
@@ -281,6 +316,8 @@ definitions:
           type: string
         password:
           type: string
+        active:
+          type: boolean
         email:
           type: string
         user_type_id:
@@ -298,6 +335,7 @@ definitions:
             username: "username"
             email: "admin@mail.com"
             password: "password"
+            active: true
             user_type_id: 1 #admin
             tenant_id: 1
   Response:

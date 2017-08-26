@@ -19,6 +19,9 @@ import (
 // swagger:model Profile
 type Profile struct {
 
+	// active
+	Active bool `json:"active,omitempty"`
+
 	// email
 	Email string `json:"email,omitempty"`
 

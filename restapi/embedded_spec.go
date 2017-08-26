@@ -193,6 +193,12 @@ func init() {
               "$ref": "#/definitions/Jwt"
             }
           },
+          "201": {
+            "description": "Password change is required, hit the password reset endpoint with the generated jwt token",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
           "206": {
             "description": "Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.",
             "schema": {
@@ -285,35 +291,45 @@ func init() {
       }
     },
     "/user/password": {
-      "post": {
-        "summary": "change or reset an user password",
+      "put": {
+        "summary": "resets an user password using a temporary password provided by an admin, once reset you can login as normal using the new password",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "id_profile",
-                "password_new"
-              ],
-              "properties": {
-                "id_profile": {
-                  "type": "integer"
-                },
-                "password_new": {
-                  "type": "string"
-                },
-                "password_old": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/PassResetTemp"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "shows a message if the password was changed or sent with an email reminder."
+          "200": {},
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "post": {
+        "summary": "reset an user password, when old password is not provided the user will be required to change its password upon next login using a temporary password provided by an admin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PassReset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {},
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -398,6 +414,41 @@ func init() {
         "username": "admin@mail.com"
       }
     },
+    "PassReset": {
+      "type": "object",
+      "required": [
+        "id_profile",
+        "password_new"
+      ],
+      "properties": {
+        "id_profile": {
+          "type": "integer"
+        },
+        "password_new": {
+          "type": "string"
+        },
+        "password_old": {
+          "type": "string"
+        }
+      }
+    },
+    "PassResetTemp": {
+      "type": "object",
+      "required": [
+        "jwt",
+        "passwordNew"
+      ],
+      "properties": {
+        "jwt": {
+          "description": "the jwt token accuired form the initial login",
+          "type": "string"
+        },
+        "passwordNew": {
+          "description": "the new password for this user",
+          "type": "string"
+        }
+      }
+    },
     "Profile": {
       "type": "object",
       "required": [
@@ -405,6 +456,9 @@ func init() {
         "password"
       ],
       "properties": {
+        "active": {
+          "type": "boolean"
+        },
         "email": {
           "type": "string"
         },
@@ -431,6 +485,7 @@ func init() {
         }
       },
       "example": {
+        "active": true,
         "email": "admin@mail.com",
         "password": "password",
         "tenant_id": 1,

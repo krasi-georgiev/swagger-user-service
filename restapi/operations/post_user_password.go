@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-	swag "github.com/go-openapi/swag"
 )
 
 // PostUserPasswordHandlerFunc turns a function with the right signature into a post user password handler
@@ -32,7 +31,7 @@ func NewPostUserPassword(ctx *middleware.Context, handler PostUserPasswordHandle
 
 /*PostUserPassword swagger:route POST /user/password postUserPassword
 
-change or reset an user password
+reset an user password, when old password is not provided the user will be required to change its password upon next login using a temporary password provided by an admin
 
 */
 type PostUserPassword struct {
@@ -69,38 +68,4 @@ func (o *PostUserPassword) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// PostUserPasswordBody post user password body
-// swagger:model PostUserPasswordBody
-type PostUserPasswordBody struct {
-
-	// id profile
-	// Required: true
-	IDProfile *int64 `json:"id_profile"`
-
-	// password new
-	// Required: true
-	PasswordNew *string `json:"password_new"`
-
-	// password old
-	PasswordOld string `json:"password_old,omitempty"`
-}
-
-// MarshalBinary interface implementation
-func (o *PostUserPasswordBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *PostUserPasswordBody) UnmarshalBinary(b []byte) error {
-	var res PostUserPasswordBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

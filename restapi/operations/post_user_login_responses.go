@@ -56,6 +56,49 @@ func (o *PostUserLoginOK) WriteResponse(rw http.ResponseWriter, producer runtime
 	}
 }
 
+// PostUserLoginCreatedCode is the HTTP code returned for type PostUserLoginCreated
+const PostUserLoginCreatedCode int = 201
+
+/*PostUserLoginCreated Password change is required, hit the password reset endpoint with the generated jwt token
+
+swagger:response postUserLoginCreated
+*/
+type PostUserLoginCreated struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Jwt `json:"body,omitempty"`
+}
+
+// NewPostUserLoginCreated creates PostUserLoginCreated with default headers values
+func NewPostUserLoginCreated() *PostUserLoginCreated {
+	return &PostUserLoginCreated{}
+}
+
+// WithPayload adds the payload to the post user login created response
+func (o *PostUserLoginCreated) WithPayload(payload *models.Jwt) *PostUserLoginCreated {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post user login created response
+func (o *PostUserLoginCreated) SetPayload(payload *models.Jwt) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostUserLoginCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(201)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PostUserLoginPartialContentCode is the HTTP code returned for type PostUserLoginPartialContent
 const PostUserLoginPartialContentCode int = 206
 

@@ -62,6 +62,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		PutUser2faHandler: PutUser2faHandlerFunc(func(params PutUser2faParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUser2fa has not yet been implemented")
 		}),
+		PutUserPasswordHandler: PutUserPasswordHandlerFunc(func(params PutUserPasswordParams) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserPassword has not yet been implemented")
+		}),
 
 		// Applies when the "x-jwt" header is set
 		JwtAuth: func(token string) (interface{}, error) {
@@ -118,6 +121,8 @@ type UserManagementAPI struct {
 	PostUserPasswordHandler PostUserPasswordHandler
 	// PutUser2faHandler sets the operation handler for the put user2fa operation
 	PutUser2faHandler PutUser2faHandler
+	// PutUserPasswordHandler sets the operation handler for the put user password operation
+	PutUserPasswordHandler PutUserPasswordHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -219,6 +224,10 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.PutUser2faHandler == nil {
 		unregistered = append(unregistered, "PutUser2faHandler")
+	}
+
+	if o.PutUserPasswordHandler == nil {
+		unregistered = append(unregistered, "PutUserPasswordHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -358,6 +367,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/user/2fa"] = NewPutUser2fa(o.context, o.PutUser2faHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/password"] = NewPutUserPassword(o.context, o.PutUserPasswordHandler)
 
 }
 

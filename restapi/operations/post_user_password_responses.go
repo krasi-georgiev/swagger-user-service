@@ -16,7 +16,7 @@ import (
 // PostUserPasswordOKCode is the HTTP code returned for type PostUserPasswordOK
 const PostUserPasswordOKCode int = 200
 
-/*PostUserPasswordOK shows a message if the password was changed or sent with an email reminder.
+/*PostUserPasswordOK post user password o k
 
 swagger:response postUserPasswordOK
 */
@@ -32,6 +32,92 @@ func NewPostUserPasswordOK() *PostUserPasswordOK {
 func (o *PostUserPasswordOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
+}
+
+// PostUserPasswordUnauthorizedCode is the HTTP code returned for type PostUserPasswordUnauthorized
+const PostUserPasswordUnauthorizedCode int = 401
+
+/*PostUserPasswordUnauthorized Authentication is missing or invalid
+
+swagger:response postUserPasswordUnauthorized
+*/
+type PostUserPasswordUnauthorized struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
+}
+
+// NewPostUserPasswordUnauthorized creates PostUserPasswordUnauthorized with default headers values
+func NewPostUserPasswordUnauthorized() *PostUserPasswordUnauthorized {
+	return &PostUserPasswordUnauthorized{}
+}
+
+// WithPayload adds the payload to the post user password unauthorized response
+func (o *PostUserPasswordUnauthorized) WithPayload(payload *models.Response) *PostUserPasswordUnauthorized {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post user password unauthorized response
+func (o *PostUserPasswordUnauthorized) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostUserPasswordUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(401)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// PostUserPasswordNotFoundCode is the HTTP code returned for type PostUserPasswordNotFound
+const PostUserPasswordNotFoundCode int = 404
+
+/*PostUserPasswordNotFound Resource not found
+
+swagger:response postUserPasswordNotFound
+*/
+type PostUserPasswordNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Response `json:"body,omitempty"`
+}
+
+// NewPostUserPasswordNotFound creates PostUserPasswordNotFound with default headers values
+func NewPostUserPasswordNotFound() *PostUserPasswordNotFound {
+	return &PostUserPasswordNotFound{}
+}
+
+// WithPayload adds the payload to the post user password not found response
+func (o *PostUserPasswordNotFound) WithPayload(payload *models.Response) *PostUserPasswordNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post user password not found response
+func (o *PostUserPasswordNotFound) SetPayload(payload *models.Response) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostUserPasswordNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 /*PostUserPasswordDefault Unexpected error

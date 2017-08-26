@@ -94,6 +94,9 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		if t.F2a {
 			return nil, errors.New(401, "account is with 2 factor enabled so hit the 2 factor endpoint first")
 		}
+		if t.RequirePassReset {
+			return nil, errors.New(401, "account requires a password change so hit the pass reset endpoint using the provided  temporary password")
+		}
 
 		return t, nil
 	}
@@ -134,7 +137,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		_, ok := principal.(*Jwt)
 		if !ok {
-			operations.NewPostUserManagementDefault(0)
+			return operations.NewPostUserManagementDefault(0)
 		}
 		// check if can create users
 		// if !CheckScope(j.Scope, "createUser") {
@@ -163,14 +166,15 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		var id int64
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Password), bcrypt.DefaultCost)
 		if err != nil {
-			operations.NewPostUserManagementDefault(0)
 			log.Println(err)
+			return operations.NewPostUserManagementDefault(0)
+
 		}
 
-		err = db.QueryRow("INSERT INTO public.user (username,email, password,tenant_id,created)	VALUES ($1, $2, $3, $4,$5)	RETURNING id", *params.Body.Username, email, hashedPassword, *params.Body.TenantID, time.Now()).Scan(&id)
+		err = db.QueryRow("INSERT INTO public.user (username,email,active, password,tenant_id,created)	VALUES ($1, $2, $3, $4,$5,$6)	RETURNING id", *params.Body.Username, email, params.Body.Active, hashedPassword, *params.Body.TenantID, time.Now()).Scan(&id)
 		if err != nil {
-			operations.NewPostUserManagementDefault(0)
 			log.Println(err)
+			return operations.NewPostUserManagementDefault(0)
 		}
 		return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: &id})
 
@@ -178,7 +182,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
 		_, ok := principal.(*Jwt)
 		if !ok {
-			operations.NewDeleteUserManagementDefault(0)
+			return operations.NewDeleteUserManagementDefault(0)
 		}
 		// check if can delete users
 		// if !CheckScope(j.Scope, "deleteUser") {
@@ -202,7 +206,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	})
 
 	api.PostUserLoginHandler = operations.PostUserLoginHandlerFunc(func(params operations.PostUserLoginParams) middleware.Responder {
-		rows, err := db.Query("SELECT id,password,f2a FROM public.user WHERE username=$1", params.Body.Username)
+		rows, err := db.Query("SELECT id,password,active,reset_password_next_login,f2a FROM public.user WHERE username=$1", params.Body.Username)
 
 		if err != nil {
 			log.Println(err)
@@ -213,9 +217,11 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		for rows.Next() {
 			var id int
 			var password string
+			var active sql.NullBool
+			var reset_password_next_login sql.NullBool
 			var f2a sql.NullString
 
-			if err := rows.Scan(&id, &password, &f2a); err != nil {
+			if err := rows.Scan(&id, &password, &active, &reset_password_next_login, &f2a); err != nil {
 				log.Println(err)
 				return operations.NewPostUserLoginDefault(0)
 			}
@@ -226,14 +232,20 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 					"id_profile": strconv.Itoa(id),
 				}
 				t["scope"], err = setScopes(id)
-
 				if err != nil {
 					log.Println(err)
 					return operations.NewPostUserLoginDefault(0)
 				}
 
+				if !active.Bool {
+					return operations.NewPostUserLoginDefault(401).WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("user is disabled")}))
+				}
+
 				if f2a.Valid { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
-					t["f2a"] = "enabled"
+					t["f2a"] = true
+				}
+				if reset_password_next_login.Bool { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
+					t["reset_password_next_login"] = true
 				}
 
 				token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
@@ -244,16 +256,88 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				if f2a.Valid {
 					return operations.NewPostUserLoginPartialContent().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 				}
+				if reset_password_next_login.Bool {
+					return operations.NewPostUserLoginCreated().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
+				}
 				return operations.NewPostUserLoginOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 			}
 		}
 		return operations.NewPostUserLoginNotFound()
 	})
 
+	api.PostUserPasswordHandler = operations.PostUserPasswordHandlerFunc(func(params operations.PostUserPasswordParams, principal interface{}) middleware.Responder {
+		j, ok := principal.(*Jwt)
+		if !ok {
+			return operations.NewPostUserPasswordDefault(0)
+		}
+
+		// TODO check if the user is trying to change his own password or has permissions to check anyones password
+		// prevents changing someone elses password
+		if false && int64(j.Id_profile) != *params.Body.IDProfile {
+			return operations.NewPostUserPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("no permission to change the password for this user")}))
+		}
+
+		allowed := false
+		if false {
+			var password string
+			err := db.QueryRow("SELECT password FROM public.user WHERE id=$1", j.Id_profile).Scan(&password)
+			if err != nil {
+				log.Println(err)
+				return operations.NewPostUserPasswordDefault(0)
+			}
+			if bcrypt.CompareHashAndPassword([]byte(password), []byte(params.Body.PasswordOld)) == nil {
+				allowed = true
+			} else {
+				return operations.NewPostUserPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("old password doesn't match")}))
+			}
+		} else {
+			allowed = true
+		}
+		if allowed {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.PasswordNew), bcrypt.DefaultCost)
+			if err != nil {
+				log.Println(err)
+
+				return operations.NewPostUserPasswordDefault(0)
+			}
+			_, err = db.Exec("UPDATE public.user SET password=$1,reset_password_next_login=true WHERE id=$2 ;", hashedPassword, params.Body.IDProfile)
+			if err != nil {
+				log.Println(err)
+				return operations.NewPostUserPasswordDefault(0)
+			}
+			return operations.NewPostUserPasswordOK()
+
+		}
+		return operations.NewPostUserPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("don't have permission to change this user password")}))
+
+	})
+
+	api.PutUserPasswordHandler = operations.PutUserPasswordHandlerFunc(func(params operations.PutUserPasswordParams) middleware.Responder {
+		var tt *Jwt
+		if t, err := ParseJwt(*params.Body.Jwt); err != nil {
+			log.Println(err)
+			return operations.NewPutUserPasswordUnauthorized().WithPayload(&models.Response{Code: swag.Int64(int64(err.Code())), Message: swag.String(err.Error())})
+		} else {
+			tt = t
+		}
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.PasswordNew), bcrypt.DefaultCost)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPutUserPasswordDefault(0)
+		}
+
+		_, err = db.Exec("UPDATE public.user SET password=$1,reset_password_next_login=false WHERE id=$2 ;", hashedPassword, tt.Id_profile)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPutUserPasswordDefault(0)
+		}
+		return operations.NewPutUserPasswordOK()
+	})
+
 	api.DeleteUser2faHandler = operations.DeleteUser2faHandlerFunc(func(params operations.DeleteUser2faParams, principal interface{}) middleware.Responder {
 		j, ok := principal.(*Jwt)
 		if !ok {
-			operations.NewDeleteUser2faDefault(0)
+			return operations.NewDeleteUser2faDefault(0)
 		}
 
 		var password string
@@ -299,7 +383,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.PutUser2faHandler = operations.PutUser2faHandlerFunc(func(params operations.PutUser2faParams, principal interface{}) middleware.Responder {
 		j, ok := principal.(*Jwt)
 		if !ok {
-			operations.NewPutUser2faDefault(0)
+			return operations.NewPutUser2faDefault(0)
 		}
 		// verify the code and if match save the master secret for the account
 		code, _, err := GetCurrent2faCode(*params.Body.Secret)
@@ -681,8 +765,11 @@ func ParseJwt(token string) (*Jwt, errors.Error) {
 	// 	log.Println("parsing user scopes error:", err)
 	// 	return nil, errors.New(500, "system error")
 	// }
-	if s, ok := t.Claims.(jwt.MapClaims)["f2a"].(string); ok && s != "" {
+	if s, ok := t.Claims.(jwt.MapClaims)["f2a"].(bool); ok && s {
 		j.F2a = true
+	}
+	if s, ok := t.Claims.(jwt.MapClaims)["reset_password_next_login"].(bool); ok && s {
+		j.RequirePassReset = true
 	}
 
 	return j, nil
@@ -691,6 +778,7 @@ func ParseJwt(token string) (*Jwt, errors.Error) {
 type Jwt struct {
 	Id_profile, User_type_id int
 	F2a                      bool
+	RequirePassReset         bool
 	Scope                    Scope
 }
 
