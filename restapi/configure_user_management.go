@@ -214,12 +214,13 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		}
 		defer rows.Close()
 
+		var id int
+		var password string
+		var active sql.NullBool
+		var reset_password_next_login sql.NullBool
+		var f2a sql.NullString
+
 		for rows.Next() {
-			var id int
-			var password string
-			var active sql.NullBool
-			var reset_password_next_login sql.NullBool
-			var f2a sql.NullString
 
 			if err := rows.Scan(&id, &password, &active, &reset_password_next_login, &f2a); err != nil {
 				log.Println(err)
@@ -261,6 +262,11 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				}
 				return operations.NewPostUserLoginOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 			}
+		}
+		_, err = db.Exec("INSERT INTO public.failed_logins (timestamp,user_id,attempted_username) VALUES ($1,$2,$3) ;", time.Now(), id, params.Body.Username)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPostUserLoginDefault(0)
 		}
 		return operations.NewPostUserLoginNotFound()
 	})
