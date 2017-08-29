@@ -9,11 +9,8 @@ TODO:
 
 setup proper permissions check for all endpoints and improve the pass reset handling
 
-
-	/user/management (PUT) - update an account
-
-	ability to set and change roles
+ability to set and change roles
 
 
-	implement context cancelling
-	testing ???
+implement context cancelling
+testing ???

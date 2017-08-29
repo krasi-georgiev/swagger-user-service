@@ -62,6 +62,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		PutUser2faHandler: PutUser2faHandlerFunc(func(params PutUser2faParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUser2fa has not yet been implemented")
 		}),
+		PutUserManagementHandler: PutUserManagementHandlerFunc(func(params PutUserManagementParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserManagement has not yet been implemented")
+		}),
 		PutUserPasswordHandler: PutUserPasswordHandlerFunc(func(params PutUserPasswordParams) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserPassword has not yet been implemented")
 		}),
@@ -121,6 +124,8 @@ type UserManagementAPI struct {
 	PostUserPasswordHandler PostUserPasswordHandler
 	// PutUser2faHandler sets the operation handler for the put user2fa operation
 	PutUser2faHandler PutUser2faHandler
+	// PutUserManagementHandler sets the operation handler for the put user management operation
+	PutUserManagementHandler PutUserManagementHandler
 	// PutUserPasswordHandler sets the operation handler for the put user password operation
 	PutUserPasswordHandler PutUserPasswordHandler
 
@@ -224,6 +229,10 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.PutUser2faHandler == nil {
 		unregistered = append(unregistered, "PutUser2faHandler")
+	}
+
+	if o.PutUserManagementHandler == nil {
+		unregistered = append(unregistered, "PutUserManagementHandler")
 	}
 
 	if o.PutUserPasswordHandler == nil {
@@ -367,6 +376,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/user/2fa"] = NewPutUser2fa(o.context, o.PutUser2faHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/management"] = NewPutUserManagement(o.context, o.PutUserManagementHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

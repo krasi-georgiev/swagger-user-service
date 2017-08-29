@@ -16,7 +16,7 @@ import (
 // PostUserPasswordOKCode is the HTTP code returned for type PostUserPasswordOK
 const PostUserPasswordOKCode int = 200
 
-/*PostUserPasswordOK post user password o k
+/*PostUserPasswordOK user updated
 
 swagger:response postUserPasswordOK
 */

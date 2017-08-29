@@ -215,6 +215,30 @@ func init() {
       }
     },
     "/user/management": {
+      "put": {
+        "summary": "updates an existing user, only submited fields will be updated so can ommit the ones that don't need updating",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ProfileUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {},
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
       "post": {
         "summary": "creates a new user",
         "parameters": [
@@ -321,7 +345,9 @@ func init() {
           }
         ],
         "responses": {
-          "200": {},
+          "200": {
+            "description": "user updated"
+          },
           "401": {
             "$ref": "#/responses/UnauthorizedError"
           },
@@ -465,17 +491,16 @@ func init() {
         "password": {
           "type": "string"
         },
+        "reset_password_next_login": {
+          "type": "boolean"
+        },
         "role": {
           "items": {
             "type": "integer"
           }
         },
         "tenant_id": {
-          "type": "integer",
-          "default": 1,
-          "enum": [
-            1
-          ]
+          "type": "integer"
         },
         "username": {
           "type": "string"
@@ -485,6 +510,62 @@ func init() {
         "active": true,
         "email": "admin@mail.com",
         "password": "password",
+        "reset_password_next_login": false,
+        "role": [
+          1,
+          2
+        ],
+        "tenant_id": 1,
+        "username": "username"
+      }
+    },
+    "ProfileUpdate": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "active": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "password": {
+          "type": "string"
+        },
+        "reset_password_next_login": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        },
+        "role": {
+          "items": {
+            "type": "integer"
+          }
+        },
+        "tenant_id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "example": {
+        "active": "true",
+        "email": "admin@mail.com",
+        "id": 1,
+        "password": "password",
+        "reset_password_next_login": "false",
         "role": [
           1,
           2

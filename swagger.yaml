@@ -155,6 +155,21 @@ paths:
           $ref: "#/responses/UserExistsError"
         default:
           $ref: "#/responses/DefaultError"
+    put:
+      summary: updates an existing user, only submited fields will be updated so can ommit the ones that don't need updating
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: "#/definitions/ProfileUpdate"
+      responses:
+        200:
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        404:
+          $ref: "#/responses/NotFoundError"
+        default:
+          $ref: "#/responses/DefaultError"
     delete:
       summary: deletes a user from the db
       parameters:
@@ -187,6 +202,7 @@ paths:
             $ref: "#/definitions/PassReset"
       responses:
         200:
+          description: "user updated"
         401:
           $ref: "#/responses/UnauthorizedError"
         404:
@@ -313,6 +329,8 @@ definitions:
           type: string
         password:
           type: string
+        reset_password_next_login:
+          type: boolean
         active:
           type: boolean
         email:
@@ -322,18 +340,57 @@ definitions:
                 type: integer
         tenant_id:
           type: integer
-          default: 1
-          enum:
-            - 1
       example:
             username: "username"
             email: "admin@mail.com"
             password: "password"
             active: true
+            reset_password_next_login: false
             tenant_id: 1
             role:
               - 1
               - 2
+  ProfileUpdate:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+      reset_password_next_login:
+        type: string
+        enum:
+          - "true"
+          - "false"
+
+      password:
+        type: string
+      active:
+        type: string
+        enum:
+          - "true"
+          - "false"
+      email:
+        type: string
+      role:
+          items:
+              type: integer
+      tenant_id:
+        type: integer
+    example:
+          id: 1
+          username: "username"
+          email: "admin@mail.com"
+          password: "password"
+          reset_password_next_login: "false"
+          active: "true"
+          tenant_id: 1
+          role:
+            - 1
+            - 2
+
   Response:
     type: object
     properties:

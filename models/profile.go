@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -29,6 +27,9 @@ type Profile struct {
 	// password
 	// Required: true
 	Password *string `json:"password"`
+
+	// reset password next login
+	ResetPasswordNextLogin bool `json:"reset_password_next_login,omitempty"`
 
 	// role
 	// Required: true
@@ -101,34 +102,9 @@ func (m *Profile) validateRole(formats strfmt.Registry) error {
 	return nil
 }
 
-var profileTypeTenantIDPropEnum []interface{}
-
-func init() {
-	var res []int64
-	if err := json.Unmarshal([]byte(`[1]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		profileTypeTenantIDPropEnum = append(profileTypeTenantIDPropEnum, v)
-	}
-}
-
-// prop value enum
-func (m *Profile) validateTenantIDEnum(path, location string, value int64) error {
-	if err := validate.Enum(path, location, value, profileTypeTenantIDPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m *Profile) validateTenantID(formats strfmt.Registry) error {
 
 	if err := validate.Required("tenant_id", "body", m.TenantID); err != nil {
-		return err
-	}
-
-	// value enum
-	if err := m.validateTenantIDEnum("tenant_id", "body", *m.TenantID); err != nil {
 		return err
 	}
 

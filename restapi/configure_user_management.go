@@ -204,12 +204,126 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 				)
 			SELECT * FROM profileInsert`
 
-		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, hashedPassword, *params.Body.TenantID, time.Now(), false).Scan(&id)
+		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserManagementDefault(0)
 		}
 		return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: &id})
+
+	})
+	api.PutUserManagementHandler = operations.PutUserManagementHandlerFunc(func(params operations.PutUserManagementParams, principal interface{}) middleware.Responder {
+
+		tx, err := db.Begin()
+		if err != nil {
+			log.Println(err)
+			return operations.NewPutUserManagementDefault(0)
+		}
+
+		if params.Body.Password != "" {
+			var hashedPassword []byte
+			hashedPassword, err = bcrypt.GenerateFromPassword([]byte(params.Body.Password), bcrypt.DefaultCost)
+			if err != nil {
+				log.Println(err)
+				return operations.NewPutUserManagementDefault(0)
+			}
+			_, err = tx.Exec("UPDATE public.user SET password=$1  WHERE id=$2;", hashedPassword, params.Body.ID)
+
+		}
+
+		if params.Body.Active != "" {
+			var active bool
+			switch params.Body.Active {
+			case "true":
+				active = true
+			default:
+				active = false
+			}
+			_, err = tx.Exec("UPDATE public.user SET active=$1  WHERE id=$2;", active, params.Body.ID)
+
+		}
+
+		if params.Body.Email != "" {
+			_, err = tx.Exec("UPDATE public.user SET email=$1  WHERE id=$2;", params.Body.Email, params.Body.ID)
+		}
+
+		if params.Body.ResetPasswordNextLogin != "" {
+			var reset bool
+			switch params.Body.ResetPasswordNextLogin {
+			case "true":
+				reset = true
+			default:
+				reset = false
+			}
+			_, err = tx.Exec("UPDATE public.user SET reset_password_next_login=$1  WHERE id=$2;", reset, params.Body.ID)
+		}
+
+		if params.Body.TenantID > 0 {
+			_, err = tx.Exec("UPDATE public.user SET tenant_id=$1  WHERE id=$2;", params.Body.TenantID, params.Body.ID)
+		}
+
+		if len(params.Body.Role) > 0 {
+			_, err = tx.Exec("DELETE FROM user_role WHERE user_id=$1;", params.Body.ID)
+			if err != nil {
+				log.Println(err)
+				return operations.NewPutUserManagementDefault(0)
+			}
+
+			// check if all values in the role array include valid roles
+			roleV := ""
+			for _, v := range params.Body.Role {
+				roleV = roleV + strconv.Itoa(int(v)) + ","
+			}
+			// remove the last comma
+			roleV = roleV[:len(roleV)-1]
+
+			result, err := tx.Exec("SELECT id FROM role WHERE id IN (" + roleV + ") ;")
+			if err != nil {
+				log.Println(err)
+				return operations.NewPutUserManagementDefault(0)
+			}
+			if count, err := result.RowsAffected(); err != nil || count < int64(len(params.Body.Role)) {
+				return operations.NewPutUserManagementDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role array includes invalid id")}))
+			}
+
+			roles := ""
+			for _, v := range params.Body.Role {
+				roles = roles + "(" + strconv.Itoa(int(*params.Body.ID)) + ", " + strconv.Itoa(int(v)) + "),"
+			}
+			// remove the last comma
+			roles = roles[:len(roles)-1]
+			_, err = tx.Exec("INSERT INTO user_role (user_id,role_id)	VALUES " + roles + ";")
+		}
+
+		if err != nil {
+			log.Println(err)
+			return operations.NewPutUserManagementDefault(0)
+		}
+
+		err = tx.Commit()
+		if err != nil {
+			tx.Rollback()
+			log.Println(err)
+			return operations.NewPutUserManagementDefault(0)
+		}
+
+		if params.Body.Username != "" {
+			// before updating make sure the same username doesn't already exist
+			rows, err := db.Query("SELECT id FROM public.user WHERE username=$1 AND id != $2", params.Body.Username, params.Body.ID)
+			if err != nil {
+				log.Println(err)
+				return operations.NewPutUserManagementDefault(0)
+			}
+			defer rows.Close()
+
+			for rows.Next() {
+				return operations.NewPutUserManagementDefault(409).WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("username  already exists")})
+			}
+
+			_, err = db.Exec("UPDATE public.user SET username=$1  WHERE id=$2;", params.Body.Username, params.Body.ID)
+		}
+
+		return operations.NewPutUserManagementOK()
 
 	})
 	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
