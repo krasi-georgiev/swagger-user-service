@@ -311,6 +311,9 @@ definitions:
       required:
       - username
       - password
+      - active
+      - role
+      - tenant_id
       properties:
         username:
           type: string
@@ -320,12 +323,9 @@ definitions:
           type: boolean
         email:
           type: string
-        user_type_id:
-          type: integer
-          default: 2
-          enum:
-            - 1 #admin
-            - 2 #user
+        role:
+            items:
+                type: integer
         tenant_id:
           type: integer
           default: 1
@@ -336,8 +336,10 @@ definitions:
             email: "admin@mail.com"
             password: "password"
             active: true
-            user_type_id: 1 #admin
             tenant_id: 1
+            role:
+              - 1
+              - 2
   Response:
     type: object
     properties:

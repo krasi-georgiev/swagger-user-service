@@ -135,10 +135,10 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.PostUserManagementHandler = operations.PostUserManagementHandlerFunc(func(params operations.PostUserManagementParams, principal interface{}) middleware.Responder {
 
-		_, ok := principal.(*Jwt)
-		if !ok {
-			return operations.NewPostUserManagementDefault(0)
-		}
+		// _, ok := principal.(*Jwt)
+		// if !ok {
+		// 	return operations.NewPostUserManagementDefault(0)
+		// }
 		// check if can create users
 		// if !CheckScope(j.Scope, "createUser") {
 		// 	return operations.NewPostUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user creation scope")})
@@ -171,7 +171,40 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		}
 
-		err = db.QueryRow("INSERT INTO public.user (username,email,active, password,tenant_id,created)	VALUES ($1, $2, $3, $4,$5,$6)	RETURNING id", *params.Body.Username, email, params.Body.Active, hashedPassword, *params.Body.TenantID, time.Now()).Scan(&id)
+		// check if all values in the role array include valid roles
+		roleV := ""
+		for _, v := range params.Body.Role {
+			roleV = roleV + strconv.Itoa(int(v)) + ","
+		}
+		// remove the last comma
+		roleV = roleV[:len(roleV)-1]
+
+		result, err := db.Exec("SELECT id FROM role WHERE id IN (" + roleV + ") ;")
+		if err != nil {
+			log.Println(err)
+			return operations.NewPostUserManagementDefault(0)
+		}
+		if count, err := result.RowsAffected(); err != nil || count < int64(len(params.Body.Role)) {
+			return operations.NewPostUserManagementDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role array includes invalid id")}))
+		}
+
+		roles := ""
+		for _, v := range params.Body.Role {
+			roles = roles + "((SELECT id FROM profileInsert), " + strconv.Itoa(int(v)) + "),"
+		}
+		// remove the last comma
+		roles = roles[:len(roles)-1]
+		query := `
+		WITH profileInsert as (
+			INSERT INTO public.user (username,email,active, password,tenant_id,created,reset_password_next_login)
+			VALUES ($1,$2,$3,$4,$5,$6,$7)	RETURNING id),
+			insertProfileRole as (
+				INSERT INTO user_role (user_id,role_id)
+				VALUES ` + roles + `
+				)
+			SELECT * FROM profileInsert`
+
+		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, hashedPassword, *params.Body.TenantID, time.Now(), false).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserManagementDefault(0)

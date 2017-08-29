@@ -453,7 +453,10 @@ func init() {
       "type": "object",
       "required": [
         "username",
-        "password"
+        "password",
+        "active",
+        "role",
+        "tenant_id"
       ],
       "properties": {
         "active": {
@@ -465,19 +468,16 @@ func init() {
         "password": {
           "type": "string"
         },
+        "role": {
+          "items": {
+            "type": "integer"
+          }
+        },
         "tenant_id": {
           "type": "integer",
           "default": 1,
           "enum": [
             1
-          ]
-        },
-        "user_type_id": {
-          "type": "integer",
-          "default": 2,
-          "enum": [
-            1,
-            2
           ]
         },
         "username": {
@@ -488,8 +488,11 @@ func init() {
         "active": true,
         "email": "admin@mail.com",
         "password": "password",
+        "role": [
+          1,
+          2
+        ],
         "tenant_id": 1,
-        "user_type_id": 1,
         "username": "username"
       }
     },

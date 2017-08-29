@@ -15,9 +15,9 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// Profile profile
-// swagger:model Profile
-type Profile struct {
+// ProfileCreate profile create
+// swagger:model ProfileCreate
+type ProfileCreate struct {
 
 	// active
 	// Required: true
@@ -43,8 +43,8 @@ type Profile struct {
 	Username *string `json:"username"`
 }
 
-// Validate validates this profile
-func (m *Profile) Validate(formats strfmt.Registry) error {
+// Validate validates this profile create
+func (m *ProfileCreate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateActive(formats); err != nil {
@@ -78,7 +78,7 @@ func (m *Profile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Profile) validateActive(formats strfmt.Registry) error {
+func (m *ProfileCreate) validateActive(formats strfmt.Registry) error {
 
 	if err := validate.Required("active", "body", m.Active); err != nil {
 		return err
@@ -87,7 +87,7 @@ func (m *Profile) validateActive(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Profile) validatePassword(formats strfmt.Registry) error {
+func (m *ProfileCreate) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.Required("password", "body", m.Password); err != nil {
 		return err
@@ -96,12 +96,12 @@ func (m *Profile) validatePassword(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Profile) validateRole(formats strfmt.Registry) error {
+func (m *ProfileCreate) validateRole(formats strfmt.Registry) error {
 
 	return nil
 }
 
-var profileTypeTenantIDPropEnum []interface{}
+var profileCreateTypeTenantIDPropEnum []interface{}
 
 func init() {
 	var res []int64
@@ -109,19 +109,19 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		profileTypeTenantIDPropEnum = append(profileTypeTenantIDPropEnum, v)
+		profileCreateTypeTenantIDPropEnum = append(profileCreateTypeTenantIDPropEnum, v)
 	}
 }
 
 // prop value enum
-func (m *Profile) validateTenantIDEnum(path, location string, value int64) error {
-	if err := validate.Enum(path, location, value, profileTypeTenantIDPropEnum); err != nil {
+func (m *ProfileCreate) validateTenantIDEnum(path, location string, value int64) error {
+	if err := validate.Enum(path, location, value, profileCreateTypeTenantIDPropEnum); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *Profile) validateTenantID(formats strfmt.Registry) error {
+func (m *ProfileCreate) validateTenantID(formats strfmt.Registry) error {
 
 	if err := validate.Required("tenant_id", "body", m.TenantID); err != nil {
 		return err
@@ -135,7 +135,7 @@ func (m *Profile) validateTenantID(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Profile) validateUsername(formats strfmt.Registry) error {
+func (m *ProfileCreate) validateUsername(formats strfmt.Registry) error {
 
 	if err := validate.Required("username", "body", m.Username); err != nil {
 		return err
@@ -145,7 +145,7 @@ func (m *Profile) validateUsername(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Profile) MarshalBinary() ([]byte, error) {
+func (m *ProfileCreate) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -153,8 +153,8 @@ func (m *Profile) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Profile) UnmarshalBinary(b []byte) error {
-	var res Profile
+func (m *ProfileCreate) UnmarshalBinary(b []byte) error {
+	var res ProfileCreate
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
