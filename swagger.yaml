@@ -153,8 +153,6 @@ paths:
           $ref: "#/responses/NotFoundError"
         409:
           $ref: "#/responses/UserExistsError"
-        426:
-          $ref: "#/responses/ExpiredTokenError"
         default:
           $ref: "#/responses/DefaultError"
     delete:
@@ -220,10 +218,6 @@ responses:
       $ref: "#/definitions/Response"
   UserExistsError:
     description: Username already taken
-    schema:
-      $ref: "#/definitions/Response"
-  ExpiredTokenError:
-    description: SWT key has expired, request a new one
     schema:
       $ref: "#/definitions/Response"
   DefaultError:

@@ -9,7 +9,6 @@ TODO:
 
 setup proper permissions check for all endpoints and improve the pass reset handling
 
-remove expireed error and use generic UnauthorizedError
 
 	/user/management (PUT) - update an account
 
