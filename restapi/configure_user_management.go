@@ -213,20 +213,30 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	})
 	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
-		_, ok := principal.(*Jwt)
-		if !ok {
-			return operations.NewDeleteUserManagementDefault(0)
-		}
-		// check if can delete users
-		// if !CheckScope(j.Scope, "deleteUser") {
-		// 	return operations.NewDeleteUserManagementUnauthorized().WithPayload(&models.Response{Code: swag.String("401"), Message: swag.String("don't have user delete scope")})
-		// }
 
 		if *params.Body.IDProfile < 1 {
 			return operations.NewDeleteUserManagementDefault(400).WithPayload(&models.Response{Code: swag.Int64(400), Message: swag.String("invalid profile id")})
 		}
 
-		result, err := db.Exec("DELETE FROM public.user WHERE id=$1 ;", *params.Body.IDProfile)
+		tx, err := db.Begin()
+		if err != nil {
+			log.Println(err)
+			return operations.NewPostUserManagementDefault(0)
+		}
+
+		_, err = tx.Exec("DELETE FROM user_role WHERE user_id=$1;", *params.Body.IDProfile)
+		if err != nil {
+			log.Println(err)
+			return operations.NewDeleteUserManagementDefault(0)
+		}
+
+		result, err := tx.Exec("DELETE FROM public.user WHERE id=$1 ;", *params.Body.IDProfile)
+		if err != nil {
+			log.Println(err)
+			return operations.NewDeleteUserManagementDefault(0)
+		}
+
+		err = tx.Commit()
 		if err != nil {
 			log.Println(err)
 			return operations.NewDeleteUserManagementDefault(0)

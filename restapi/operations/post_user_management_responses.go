@@ -184,49 +184,6 @@ func (o *PostUserManagementConflict) WriteResponse(rw http.ResponseWriter, produ
 	}
 }
 
-// PostUserManagementUpgradeRequiredCode is the HTTP code returned for type PostUserManagementUpgradeRequired
-const PostUserManagementUpgradeRequiredCode int = 426
-
-/*PostUserManagementUpgradeRequired SWT key has expired, request a new one
-
-swagger:response postUserManagementUpgradeRequired
-*/
-type PostUserManagementUpgradeRequired struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPostUserManagementUpgradeRequired creates PostUserManagementUpgradeRequired with default headers values
-func NewPostUserManagementUpgradeRequired() *PostUserManagementUpgradeRequired {
-	return &PostUserManagementUpgradeRequired{}
-}
-
-// WithPayload adds the payload to the post user management upgrade required response
-func (o *PostUserManagementUpgradeRequired) WithPayload(payload *models.Response) *PostUserManagementUpgradeRequired {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the post user management upgrade required response
-func (o *PostUserManagementUpgradeRequired) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PostUserManagementUpgradeRequired) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(426)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*PostUserManagementDefault Unexpected error
 
 swagger:response postUserManagementDefault

@@ -247,9 +247,6 @@ func init() {
           "409": {
             "$ref": "#/responses/UserExistsError"
           },
-          "426": {
-            "$ref": "#/responses/ExpiredTokenError"
-          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }
@@ -519,12 +516,6 @@ func init() {
   "responses": {
     "DefaultError": {
       "description": "Unexpected error",
-      "schema": {
-        "$ref": "#/definitions/Response"
-      }
-    },
-    "ExpiredTokenError": {
-      "description": "SWT key has expired, request a new one",
       "schema": {
         "$ref": "#/definitions/Response"
       }
