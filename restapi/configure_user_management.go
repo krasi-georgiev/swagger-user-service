@@ -36,8 +36,8 @@ import (
 	graceful "github.com/tylerb/graceful"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/choicehealth/user-service/models"
-	"github.com/choicehealth/user-service/restapi/operations"
+	"github.com/vanderbr/choicehealth_user-service/models"
+	"github.com/vanderbr/choicehealth_user-service/restapi/operations"
 
 	"database/sql"
 

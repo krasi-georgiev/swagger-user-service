@@ -324,6 +324,7 @@ definitions:
       - active
       - role
       - tenant_id
+      - reset_password_next_login
       properties:
         username:
           type: string

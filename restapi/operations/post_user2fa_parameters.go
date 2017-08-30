@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/choicehealth/user-service/models"
+	"github.com/vanderbr/choicehealth_user-service/models"
 )
 
 // NewPostUser2faParams creates a new PostUser2faParams object

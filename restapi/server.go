@@ -20,7 +20,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/choicehealth/user-service/restapi/operations"
+	"github.com/vanderbr/choicehealth_user-service/restapi/operations"
 )
 
 const (

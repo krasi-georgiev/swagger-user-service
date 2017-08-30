@@ -1,4 +1,4 @@
-[Preview the Swagger Spec](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/choicehealth/user-service/master/swagger.yaml)
+[Preview the Swagger Spec](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/vanderbr/choicehealth_user-service/master/swagger.yaml)
 
 rm -Rf /tmp/app.rsa*
 openssl genrsa -out /tmp/app.rsa
@@ -10,7 +10,6 @@ TODO:
 setup proper permissions check for all endpoints and improve the pass reset handling
 
 ability to set and change roles
-
 
 implement context cancelling
 testing ???

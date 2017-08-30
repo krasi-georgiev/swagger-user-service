@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/choicehealth/user-service/models"
+	"github.com/vanderbr/choicehealth_user-service/models"
 )
 
 // PostUser2faOKCode is the HTTP code returned for type PostUser2faOK
