@@ -98,49 +98,6 @@ func (o *PostUserManagementUnauthorized) WriteResponse(rw http.ResponseWriter, p
 	}
 }
 
-// PostUserManagementNotFoundCode is the HTTP code returned for type PostUserManagementNotFound
-const PostUserManagementNotFoundCode int = 404
-
-/*PostUserManagementNotFound Resource not found
-
-swagger:response postUserManagementNotFound
-*/
-type PostUserManagementNotFound struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPostUserManagementNotFound creates PostUserManagementNotFound with default headers values
-func NewPostUserManagementNotFound() *PostUserManagementNotFound {
-	return &PostUserManagementNotFound{}
-}
-
-// WithPayload adds the payload to the post user management not found response
-func (o *PostUserManagementNotFound) WithPayload(payload *models.Response) *PostUserManagementNotFound {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the post user management not found response
-func (o *PostUserManagementNotFound) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PostUserManagementNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(404)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // PostUserManagementConflictCode is the HTTP code returned for type PostUserManagementConflict
 const PostUserManagementConflictCode int = 409
 

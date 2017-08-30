@@ -77,49 +77,6 @@ func (o *PutUserManagementUnauthorized) WriteResponse(rw http.ResponseWriter, pr
 	}
 }
 
-// PutUserManagementNotFoundCode is the HTTP code returned for type PutUserManagementNotFound
-const PutUserManagementNotFoundCode int = 404
-
-/*PutUserManagementNotFound Resource not found
-
-swagger:response putUserManagementNotFound
-*/
-type PutUserManagementNotFound struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPutUserManagementNotFound creates PutUserManagementNotFound with default headers values
-func NewPutUserManagementNotFound() *PutUserManagementNotFound {
-	return &PutUserManagementNotFound{}
-}
-
-// WithPayload adds the payload to the put user management not found response
-func (o *PutUserManagementNotFound) WithPayload(payload *models.Response) *PutUserManagementNotFound {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put user management not found response
-func (o *PutUserManagementNotFound) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PutUserManagementNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(404)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*PutUserManagementDefault Unexpected error
 
 swagger:response putUserManagementDefault

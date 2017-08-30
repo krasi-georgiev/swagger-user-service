@@ -29,7 +29,8 @@ type Profile struct {
 	Password *string `json:"password"`
 
 	// reset password next login
-	ResetPasswordNextLogin bool `json:"reset_password_next_login,omitempty"`
+	// Required: true
+	ResetPasswordNextLogin *bool `json:"reset_password_next_login"`
 
 	// role
 	// Required: true
@@ -54,6 +55,11 @@ func (m *Profile) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePassword(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateResetPasswordNextLogin(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -91,6 +97,15 @@ func (m *Profile) validateActive(formats strfmt.Registry) error {
 func (m *Profile) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.Required("password", "body", m.Password); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Profile) validateResetPasswordNextLogin(formats strfmt.Registry) error {
+
+	if err := validate.Required("reset_password_next_login", "body", m.ResetPasswordNextLogin); err != nil {
 		return err
 	}
 

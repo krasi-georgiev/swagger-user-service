@@ -41,11 +41,17 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		DeleteUserManagementHandler: DeleteUserManagementHandlerFunc(func(params DeleteUserManagementParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation DeleteUserManagement has not yet been implemented")
 		}),
+		DeleteUserRoleHandler: DeleteUserRoleHandlerFunc(func(params DeleteUserRoleParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUserRole has not yet been implemented")
+		}),
 		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation GetUser has not yet been implemented")
 		}),
 		GetUser2faHandler: GetUser2faHandlerFunc(func(params GetUser2faParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation GetUser2fa has not yet been implemented")
+		}),
+		GetUserRoleHandler: GetUserRoleHandlerFunc(func(params GetUserRoleParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUserRole has not yet been implemented")
 		}),
 		PostUser2faHandler: PostUser2faHandlerFunc(func(params PostUser2faParams) middleware.Responder {
 			return middleware.NotImplemented("operation PostUser2fa has not yet been implemented")
@@ -59,6 +65,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		PostUserPasswordHandler: PostUserPasswordHandlerFunc(func(params PostUserPasswordParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PostUserPassword has not yet been implemented")
 		}),
+		PostUserRoleHandler: PostUserRoleHandlerFunc(func(params PostUserRoleParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserRole has not yet been implemented")
+		}),
 		PutUser2faHandler: PutUser2faHandlerFunc(func(params PutUser2faParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUser2fa has not yet been implemented")
 		}),
@@ -67,6 +76,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		}),
 		PutUserPasswordHandler: PutUserPasswordHandlerFunc(func(params PutUserPasswordParams) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserPassword has not yet been implemented")
+		}),
+		PutUserRoleHandler: PutUserRoleHandlerFunc(func(params PutUserRoleParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserRole has not yet been implemented")
 		}),
 
 		// Applies when the "x-jwt" header is set
@@ -110,10 +122,14 @@ type UserManagementAPI struct {
 	DeleteUser2faHandler DeleteUser2faHandler
 	// DeleteUserManagementHandler sets the operation handler for the delete user management operation
 	DeleteUserManagementHandler DeleteUserManagementHandler
+	// DeleteUserRoleHandler sets the operation handler for the delete user role operation
+	DeleteUserRoleHandler DeleteUserRoleHandler
 	// GetUserHandler sets the operation handler for the get user operation
 	GetUserHandler GetUserHandler
 	// GetUser2faHandler sets the operation handler for the get user2fa operation
 	GetUser2faHandler GetUser2faHandler
+	// GetUserRoleHandler sets the operation handler for the get user role operation
+	GetUserRoleHandler GetUserRoleHandler
 	// PostUser2faHandler sets the operation handler for the post user2fa operation
 	PostUser2faHandler PostUser2faHandler
 	// PostUserLoginHandler sets the operation handler for the post user login operation
@@ -122,12 +138,16 @@ type UserManagementAPI struct {
 	PostUserManagementHandler PostUserManagementHandler
 	// PostUserPasswordHandler sets the operation handler for the post user password operation
 	PostUserPasswordHandler PostUserPasswordHandler
+	// PostUserRoleHandler sets the operation handler for the post user role operation
+	PostUserRoleHandler PostUserRoleHandler
 	// PutUser2faHandler sets the operation handler for the put user2fa operation
 	PutUser2faHandler PutUser2faHandler
 	// PutUserManagementHandler sets the operation handler for the put user management operation
 	PutUserManagementHandler PutUserManagementHandler
 	// PutUserPasswordHandler sets the operation handler for the put user password operation
 	PutUserPasswordHandler PutUserPasswordHandler
+	// PutUserRoleHandler sets the operation handler for the put user role operation
+	PutUserRoleHandler PutUserRoleHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -203,12 +223,20 @@ func (o *UserManagementAPI) Validate() error {
 		unregistered = append(unregistered, "DeleteUserManagementHandler")
 	}
 
+	if o.DeleteUserRoleHandler == nil {
+		unregistered = append(unregistered, "DeleteUserRoleHandler")
+	}
+
 	if o.GetUserHandler == nil {
 		unregistered = append(unregistered, "GetUserHandler")
 	}
 
 	if o.GetUser2faHandler == nil {
 		unregistered = append(unregistered, "GetUser2faHandler")
+	}
+
+	if o.GetUserRoleHandler == nil {
+		unregistered = append(unregistered, "GetUserRoleHandler")
 	}
 
 	if o.PostUser2faHandler == nil {
@@ -227,6 +255,10 @@ func (o *UserManagementAPI) Validate() error {
 		unregistered = append(unregistered, "PostUserPasswordHandler")
 	}
 
+	if o.PostUserRoleHandler == nil {
+		unregistered = append(unregistered, "PostUserRoleHandler")
+	}
+
 	if o.PutUser2faHandler == nil {
 		unregistered = append(unregistered, "PutUser2faHandler")
 	}
@@ -237,6 +269,10 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.PutUserPasswordHandler == nil {
 		unregistered = append(unregistered, "PutUserPasswordHandler")
+	}
+
+	if o.PutUserRoleHandler == nil {
+		unregistered = append(unregistered, "PutUserRoleHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -342,6 +378,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 	}
 	o.handlers["DELETE"]["/user/management"] = NewDeleteUserManagement(o.context, o.DeleteUserManagementHandler)
 
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/user/role"] = NewDeleteUserRole(o.context, o.DeleteUserRoleHandler)
+
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -351,6 +392,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/user/2fa"] = NewGetUser2fa(o.context, o.GetUser2faHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/user/role"] = NewGetUserRole(o.context, o.GetUserRoleHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -372,6 +418,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 	}
 	o.handlers["POST"]["/user/password"] = NewPostUserPassword(o.context, o.PostUserPasswordHandler)
 
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user/role"] = NewPostUserRole(o.context, o.PostUserRoleHandler)
+
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
@@ -386,6 +437,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/user/password"] = NewPutUserPassword(o.context, o.PutUserPasswordHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/role"] = NewPutUserRole(o.context, o.PutUserRoleHandler)
 
 }
 

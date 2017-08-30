@@ -356,7 +356,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			return operations.NewDeleteUserManagementDefault(0)
 		}
 		if count, err := result.RowsAffected(); err != nil || count == 0 {
-			return operations.NewDeleteUserManagementNotFound().WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("user with this id doesn't exist")}))
+			return operations.NewDeleteUserManagementDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("user with this id doesn't exist")}))
 		}
 
 		return operations.NewDeleteUserManagementOK()
@@ -425,7 +425,8 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			log.Println(err)
 			return operations.NewPostUserLoginDefault(0)
 		}
-		return operations.NewPostUserLoginNotFound()
+		return operations.NewPostUserLoginDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("invalid login")}))
+
 	})
 
 	api.PostUserPasswordHandler = operations.PostUserPasswordHandlerFunc(func(params operations.PostUserPasswordParams, principal interface{}) middleware.Responder {
@@ -613,6 +614,76 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		}
 		return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.Int64(401), Message: swag.String("invalid 2fa token")})
 
+	})
+
+
+
+	api.DeleteUserRoleHandler = operations.DeleteUserRoleHandlerFunc(func(params operations.DeleteUserRoleParams, principal interface{}) middleware.Responder {
+		r, err := db.Exec("DELETE FROM role WHERE id=$1 ;", params.Body.ID)
+		if err != nil {
+			log.Println(err)
+			return operations.NewDeleteUserRoleDefault(0)
+		}
+		if count, err := r.RowsAffected(); err != nil || count == 0 {
+			return operations.NewDeleteUserRoleDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("invalid role id")}))
+
+		}
+		return operations.NewDeleteUserRoleOK()
+	})
+
+	api.GetUserRoleHandler = operations.GetUserRoleHandlerFunc(func(params operations.GetUserRoleParams, principal interface{}) middleware.Responder {
+
+
+		var limit string
+		if params.Limit != nil {
+			limit = " LIMIT " + strconv.Itoa(int(*params.Limit))
+		}
+		var offset string
+		if params.Offset != nil {
+			offset = " OFFSET " + strconv.Itoa(int(*params.Offset))
+		}
+
+		rows, err := db.Query("select id, name from role" + limit + offset + ";")
+		if err != nil {
+			log.Println(err)
+			return operations.NewGetUserRoleDefault(0)
+		}
+		var roles []*models.UserRole
+		for rows.Next() {
+			var (
+				id         int64
+				name string
+			)
+			if err := rows.Scan(&id, &name); err != nil {
+				log.Println(err)
+				return operations.NewGetUserRoleDefault(0)
+			}
+			roles = append(roles, &models.UserRole{ID: &id, Name: &name})
+		}
+
+		return operations.NewGetUserRoleOK().WithPayload(roles)
+	})
+
+	api.PostUserRoleHandler = operations.PostUserRoleHandlerFunc(func(params operations.PostUserRoleParams, principal interface{}) middleware.Responder {
+		var id int64
+		err := db.QueryRow("INSERT INTO role (name)	VALUES ($1)	RETURNING id", *params.Body.Name).Scan(&id)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPostUserRoleDefault(0)
+		}
+		return operations.NewPostUserRoleOK().WithPayload(operations.PostUserRoleOKBody{ID: &id})
+	})
+
+	api.PutUserRoleHandler = operations.PutUserRoleHandlerFunc(func(params operations.PutUserRoleParams, principal interface{}) middleware.Responder {
+		result, err := db.Exec("UPDATE role SET name=$1 WHERE id=$2 ;", params.Body.Name, params.Body.ID)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPutUserRoleDefault(0)
+		}
+		if count, err := result.RowsAffected(); err != nil || count ==0 {
+			return operations.NewPutUserRoleDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role id not found")}))
+		}
+		return operations.NewPutUserRoleOK()
 	})
 
 	api.ServerShutdown = func() {}

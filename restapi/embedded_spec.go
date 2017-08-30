@@ -205,9 +205,6 @@ func init() {
               "$ref": "#/definitions/Jwt"
             }
           },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
-          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }
@@ -230,9 +227,6 @@ func init() {
           "200": {},
           "401": {
             "$ref": "#/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -264,9 +258,6 @@ func init() {
           },
           "401": {
             "$ref": "#/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
           },
           "409": {
             "$ref": "#/responses/UserExistsError"
@@ -301,9 +292,6 @@ func init() {
           },
           "401": {
             "$ref": "#/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -351,8 +339,125 @@ func init() {
           "401": {
             "$ref": "#/responses/UnauthorizedError"
           },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/role": {
+      "get": {
+        "summary": "generates a list of all user roles",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "The number of items to skip before starting to collect the result set",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "The numbers of items to return",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "full roles list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/UserRole"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "put": {
+        "summary": "updates a role",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {},
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "post": {
+        "summary": "creates a new role",
+        "parameters": [
+          {
+            "description": "the id field here is not used so you can put any number to pass the validation",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the id of the created role.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "deletes a role",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "role deleted"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -479,7 +584,8 @@ func init() {
         "password",
         "active",
         "role",
-        "tenant_id"
+        "tenant_id",
+        "reset_password_next_login"
       ],
       "properties": {
         "active": {
@@ -592,17 +698,26 @@ func init() {
         "code": "500",
         "message": "Server error"
       }
+    },
+    "UserRole": {
+      "type": "object",
+      "required": [
+        "name",
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
     }
   },
   "responses": {
     "DefaultError": {
       "description": "Unexpected error",
-      "schema": {
-        "$ref": "#/definitions/Response"
-      }
-    },
-    "NotFoundError": {
-      "description": "Resource not found",
       "schema": {
         "$ref": "#/definitions/Response"
       }

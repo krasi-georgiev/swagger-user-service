@@ -65,8 +65,6 @@ paths:
           description: Password change is required, hit the password reset endpoint with the generated jwt token
           schema:
             $ref: "#/definitions/Jwt"
-        404:
-          $ref: "#/responses/NotFoundError"
         default:
           $ref: "#/responses/DefaultError"
   /user/2fa:
@@ -149,8 +147,6 @@ paths:
                 type: integer
         401:
           $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
         409:
           $ref: "#/responses/UserExistsError"
         default:
@@ -166,8 +162,6 @@ paths:
         200:
         401:
           $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
         default:
           $ref: "#/responses/DefaultError"
     delete:
@@ -187,8 +181,6 @@ paths:
           description: user deleted
         401:
           $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
         default:
           $ref: "#/responses/DefaultError"
 
@@ -205,8 +197,6 @@ paths:
           description: "user updated"
         401:
           $ref: "#/responses/UnauthorizedError"
-        404:
-          $ref: "#/responses/NotFoundError"
         default:
           $ref: "#/responses/DefaultError"
     put:
@@ -223,13 +213,84 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
+  /user/role:
+    get:
+      summary: generates a list of all user roles
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: The number of items to skip before starting to collect the result set
+        - in: query
+          name: limit
+          type: integer
+          description: The numbers of items to return
+      responses:
+        200:
+          description:  full roles list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/UserRole"
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+    post:
+      summary: creates a new role
+      parameters:
+        - in: body
+          name: body
+          description: the id field here is not used so you can put any number to pass the validation
+          schema:
+            $ref: "#/definitions/UserRole"
+      responses:
+        200:
+          description: the id of the created role.
+          schema:
+            type: object
+            properties:
+              id :
+                type: integer
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+    put:
+      summary: updates a role
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: "#/definitions/UserRole"
+      responses:
+        200:
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+    delete:
+      summary: deletes a role
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            required:
+            - id
+            properties:
+              id:
+                type: integer
+      responses:
+        200:
+          description: role deleted
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
 responses:
   UnauthorizedError:
     description: Authentication is missing or invalid
-    schema:
-      $ref: "#/definitions/Response"
-  NotFoundError:
-    description: Resource not found
     schema:
       $ref: "#/definitions/Response"
   UserExistsError:
@@ -391,7 +452,16 @@ definitions:
           role:
             - 1
             - 2
-
+  UserRole:
+      type: object
+      required:
+        - name
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
   Response:
     type: object
     properties:

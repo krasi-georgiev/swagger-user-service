@@ -142,49 +142,6 @@ func (o *PostUserLoginPartialContent) WriteResponse(rw http.ResponseWriter, prod
 	}
 }
 
-// PostUserLoginNotFoundCode is the HTTP code returned for type PostUserLoginNotFound
-const PostUserLoginNotFoundCode int = 404
-
-/*PostUserLoginNotFound Resource not found
-
-swagger:response postUserLoginNotFound
-*/
-type PostUserLoginNotFound struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPostUserLoginNotFound creates PostUserLoginNotFound with default headers values
-func NewPostUserLoginNotFound() *PostUserLoginNotFound {
-	return &PostUserLoginNotFound{}
-}
-
-// WithPayload adds the payload to the post user login not found response
-func (o *PostUserLoginNotFound) WithPayload(payload *models.Response) *PostUserLoginNotFound {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the post user login not found response
-func (o *PostUserLoginNotFound) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PostUserLoginNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(404)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*PostUserLoginDefault Unexpected error
 
 swagger:response postUserLoginDefault
