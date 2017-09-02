@@ -142,7 +142,7 @@ func (o *PostUserLoginPartialContent) WriteResponse(rw http.ResponseWriter, prod
 	}
 }
 
-/*PostUserLoginDefault Unexpected error
+/*PostUserLoginDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response postUserLoginDefault
 */

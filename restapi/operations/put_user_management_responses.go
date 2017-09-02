@@ -77,7 +77,7 @@ func (o *PutUserManagementUnauthorized) WriteResponse(rw http.ResponseWriter, pr
 	}
 }
 
-/*PutUserManagementDefault Unexpected error
+/*PutUserManagementDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response putUserManagementDefault
 */

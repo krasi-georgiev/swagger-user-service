@@ -98,7 +98,7 @@ func (o *GetUser2faUnauthorized) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
-/*GetUser2faDefault Unexpected error
+/*GetUser2faDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response getUser2faDefault
 */

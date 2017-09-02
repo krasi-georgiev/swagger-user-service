@@ -77,7 +77,7 @@ func (o *PutUserRoleUnauthorized) WriteResponse(rw http.ResponseWriter, producer
 	}
 }
 
-/*PutUserRoleDefault Unexpected error
+/*PutUserRoleDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response putUserRoleDefault
 */

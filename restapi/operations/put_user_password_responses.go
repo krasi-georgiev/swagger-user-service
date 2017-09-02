@@ -77,7 +77,7 @@ func (o *PutUserPasswordUnauthorized) WriteResponse(rw http.ResponseWriter, prod
 	}
 }
 
-/*PutUserPasswordDefault Unexpected error
+/*PutUserPasswordDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response putUserPasswordDefault
 */

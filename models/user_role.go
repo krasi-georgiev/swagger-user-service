@@ -17,6 +17,10 @@ import (
 // swagger:model UserRole
 type UserRole struct {
 
+	// data
+	// Required: true
+	Data *string `json:"data"`
+
 	// id
 	// Required: true
 	ID *int64 `json:"id"`
@@ -29,6 +33,11 @@ type UserRole struct {
 // Validate validates this user role
 func (m *UserRole) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateData(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
 
 	if err := m.validateID(formats); err != nil {
 		// prop
@@ -43,6 +52,15 @@ func (m *UserRole) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *UserRole) validateData(formats strfmt.Registry) error {
+
+	if err := validate.Required("data", "body", m.Data); err != nil {
+		return err
+	}
+
 	return nil
 }
 

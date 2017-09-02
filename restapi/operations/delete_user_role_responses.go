@@ -77,7 +77,7 @@ func (o *DeleteUserRoleUnauthorized) WriteResponse(rw http.ResponseWriter, produ
 	}
 }
 
-/*DeleteUserRoleDefault Unexpected error
+/*DeleteUserRoleDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response deleteUserRoleDefault
 */

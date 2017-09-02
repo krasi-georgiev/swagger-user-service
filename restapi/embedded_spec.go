@@ -703,9 +703,13 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "id"
+        "id",
+        "data"
       ],
       "properties": {
+        "data": {
+          "type": "string"
+        },
         "id": {
           "type": "integer"
         },
@@ -717,7 +721,7 @@ func init() {
   },
   "responses": {
     "DefaultError": {
-      "description": "Unexpected error",
+      "description": "Generic Error used for most error responses - it returns a custom code and message depending on the reply context",
       "schema": {
         "$ref": "#/definitions/Response"
       }

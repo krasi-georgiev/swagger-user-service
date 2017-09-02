@@ -643,7 +643,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			offset = " OFFSET " + strconv.Itoa(int(*params.Offset))
 		}
 
-		rows, err := db.Query("select id, name from role" + limit + offset + ";")
+		rows, err := db.Query("select id, name, data from role" + limit + offset + ";")
 		if err != nil {
 			log.Println(err)
 			return operations.NewGetUserRoleDefault(0)
@@ -652,13 +652,13 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		for rows.Next() {
 			var (
 				id         int64
-				name string
+				name,data string
 			)
-			if err := rows.Scan(&id, &name); err != nil {
+			if err := rows.Scan(&id, &name,&data); err != nil {
 				log.Println(err)
 				return operations.NewGetUserRoleDefault(0)
 			}
-			roles = append(roles, &models.UserRole{ID: &id, Name: &name})
+			roles = append(roles, &models.UserRole{ID: &id, Name: &name,Data: &data})
 		}
 
 		return operations.NewGetUserRoleOK().WithPayload(roles)
@@ -666,7 +666,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.PostUserRoleHandler = operations.PostUserRoleHandlerFunc(func(params operations.PostUserRoleParams, principal interface{}) middleware.Responder {
 		var id int64
-		err := db.QueryRow("INSERT INTO role (name)	VALUES ($1)	RETURNING id", *params.Body.Name).Scan(&id)
+		err := db.QueryRow("INSERT INTO role (name,data)	VALUES ($1)	RETURNING id", *params.Body.Name,*params.Body.Data).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserRoleDefault(0)
@@ -675,7 +675,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	})
 
 	api.PutUserRoleHandler = operations.PutUserRoleHandlerFunc(func(params operations.PutUserRoleParams, principal interface{}) middleware.Responder {
-		result, err := db.Exec("UPDATE role SET name=$1 WHERE id=$2 ;", params.Body.Name, params.Body.ID)
+		result, err := db.Exec("UPDATE role SET name=$1,data=$2 WHERE id=$3 ;", params.Body.Name,params.Body.Data, params.Body.ID)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPutUserRoleDefault(0)

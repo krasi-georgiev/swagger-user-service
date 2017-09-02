@@ -59,7 +59,7 @@ func (o *GetUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produ
 
 }
 
-/*GetUserDefault Unexpected error
+/*GetUserDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response getUserDefault
 */

@@ -298,7 +298,7 @@ responses:
     schema:
       $ref: "#/definitions/Response"
   DefaultError:
-    description: Unexpected error
+    description: Generic Error used for most error responses - it returns a custom code and message depending on the reply context
     schema:
       $ref: "#/definitions/Response"
 definitions:
@@ -457,10 +457,13 @@ definitions:
       required:
         - name
         - id
+        - data
       properties:
         id:
           type: integer
         name:
+          type: string
+        data:
           type: string
   Response:
     type: object

@@ -77,7 +77,7 @@ func (o *DeleteUser2faUnauthorized) WriteResponse(rw http.ResponseWriter, produc
 	}
 }
 
-/*DeleteUser2faDefault Unexpected error
+/*DeleteUser2faDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response deleteUser2faDefault
 */
