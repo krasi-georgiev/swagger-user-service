@@ -28,6 +28,9 @@ type Profile struct {
 	// Required: true
 	Password *string `json:"password"`
 
+	// person id
+	PersonID int64 `json:"person_id,omitempty"`
+
 	// reset password next login
 	// Required: true
 	ResetPasswordNextLogin *bool `json:"reset_password_next_login"`

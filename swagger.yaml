@@ -385,6 +385,7 @@ definitions:
       - active
       - role
       - tenant_id
+      - person_id
       - reset_password_next_login
       properties:
         username:
@@ -402,6 +403,8 @@ definitions:
                 type: integer
         tenant_id:
           type: integer
+        person_id:
+          type: integer
       example:
             username: "username"
             email: "admin@mail.com"
@@ -409,6 +412,7 @@ definitions:
             active: true
             reset_password_next_login: false
             tenant_id: 1
+            person_id: 1
             role:
               - 1
               - 2
@@ -441,6 +445,8 @@ definitions:
               type: integer
       tenant_id:
         type: integer
+      person_id:
+        type: integer
     example:
           id: 1
           username: "username"
@@ -449,6 +455,7 @@ definitions:
           reset_password_next_login: "false"
           active: "true"
           tenant_id: 1
+          person_id: 1
           role:
             - 1
             - 2

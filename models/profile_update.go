@@ -32,6 +32,9 @@ type ProfileUpdate struct {
 	// password
 	Password string `json:"password,omitempty"`
 
+	// person id
+	PersonID int64 `json:"person_id,omitempty"`
+
 	// reset password next login
 	ResetPasswordNextLogin string `json:"reset_password_next_login,omitempty"`
 

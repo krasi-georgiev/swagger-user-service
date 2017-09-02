@@ -196,15 +196,15 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		roles = roles[:len(roles)-1]
 		query := `
 		WITH profileInsert as (
-			INSERT INTO public.user (username,email,active, password,tenant_id,created,reset_password_next_login)
-			VALUES ($1,$2,$3,$4,$5,$6,$7)	RETURNING id),
+			INSERT INTO public.user (username,email,active, password,tenant_id,created,reset_password_next_login,person_id)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8)	RETURNING id),
 			insertProfileRole as (
 				INSERT INTO user_role (user_id,role_id)
 				VALUES ` + roles + `
 				)
 			SELECT * FROM profileInsert`
 
-		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin).Scan(&id)
+		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin,params.Body.PersonID).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserManagementDefault(0)
@@ -245,6 +245,10 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		if params.Body.Email != "" {
 			_, err = tx.Exec("UPDATE public.user SET email=$1  WHERE id=$2;", params.Body.Email, params.Body.ID)
+		}
+
+		if params.Body.PersonID > 0 {
+			_, err = tx.Exec("UPDATE public.user SET person_id=$1  WHERE id=$2;", params.Body.PersonID, params.Body.ID)
 		}
 
 		if params.Body.ResetPasswordNextLogin != "" {

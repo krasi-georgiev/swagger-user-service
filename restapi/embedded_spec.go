@@ -597,6 +597,9 @@ func init() {
         "password": {
           "type": "string"
         },
+        "person_id": {
+          "type": "integer"
+        },
         "reset_password_next_login": {
           "type": "boolean"
         },
@@ -616,6 +619,7 @@ func init() {
         "active": true,
         "email": "admin@mail.com",
         "password": "password",
+        "person_id": 1,
         "reset_password_next_login": false,
         "role": [
           1,
@@ -647,6 +651,9 @@ func init() {
         "password": {
           "type": "string"
         },
+        "person_id": {
+          "type": "integer"
+        },
         "reset_password_next_login": {
           "type": "string",
           "enum": [
@@ -671,6 +678,7 @@ func init() {
         "email": "admin@mail.com",
         "id": 1,
         "password": "password",
+        "person_id": 1,
         "reset_password_next_login": "false",
         "role": [
           1,
