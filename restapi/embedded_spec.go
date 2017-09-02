@@ -585,6 +585,7 @@ func init() {
         "active",
         "role",
         "tenant_id",
+        "person_id",
         "reset_password_next_login"
       ],
       "properties": {
