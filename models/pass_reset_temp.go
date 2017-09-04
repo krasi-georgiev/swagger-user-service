@@ -15,6 +15,7 @@ import (
 
 // PassResetTemp pass reset temp
 // swagger:model PassResetTemp
+
 type PassResetTemp struct {
 
 	// the jwt token accuired form the initial login
@@ -25,6 +26,10 @@ type PassResetTemp struct {
 	// Required: true
 	PasswordNew *string `json:"passwordNew"`
 }
+
+/* polymorph PassResetTemp jwt false */
+
+/* polymorph PassResetTemp passwordNew false */
 
 // Validate validates this pass reset temp
 func (m *PassResetTemp) Validate(formats strfmt.Registry) error {

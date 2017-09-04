@@ -15,6 +15,7 @@ import (
 
 // Response response
 // swagger:model Response
+
 type Response struct {
 
 	// code
@@ -25,6 +26,10 @@ type Response struct {
 	// Required: true
 	Message *string `json:"message"`
 }
+
+/* polymorph Response code false */
+
+/* polymorph Response message false */
 
 // Validate validates this response
 func (m *Response) Validate(formats strfmt.Registry) error {

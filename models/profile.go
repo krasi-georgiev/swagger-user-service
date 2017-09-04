@@ -15,6 +15,7 @@ import (
 
 // Profile profile
 // swagger:model Profile
+
 type Profile struct {
 
 	// active
@@ -48,6 +49,22 @@ type Profile struct {
 	// Required: true
 	Username *string `json:"username"`
 }
+
+/* polymorph Profile active false */
+
+/* polymorph Profile email false */
+
+/* polymorph Profile password false */
+
+/* polymorph Profile person_id false */
+
+/* polymorph Profile reset_password_next_login false */
+
+/* polymorph Profile role false */
+
+/* polymorph Profile tenant_id false */
+
+/* polymorph Profile username false */
 
 // Validate validates this profile
 func (m *Profile) Validate(formats strfmt.Registry) error {
@@ -131,6 +148,10 @@ func (m *Profile) validateResetPasswordNextLogin(formats strfmt.Registry) error 
 }
 
 func (m *Profile) validateRole(formats strfmt.Registry) error {
+
+	if err := validate.Required("role", "body", m.Role); err != nil {
+		return err
+	}
 
 	return nil
 }

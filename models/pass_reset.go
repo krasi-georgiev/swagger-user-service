@@ -15,6 +15,7 @@ import (
 
 // PassReset pass reset
 // swagger:model PassReset
+
 type PassReset struct {
 
 	// id profile
@@ -28,6 +29,12 @@ type PassReset struct {
 	// password old
 	PasswordOld string `json:"password_old,omitempty"`
 }
+
+/* polymorph PassReset id_profile false */
+
+/* polymorph PassReset password_new false */
+
+/* polymorph PassReset password_old false */
 
 // Validate validates this pass reset
 func (m *PassReset) Validate(formats strfmt.Registry) error {

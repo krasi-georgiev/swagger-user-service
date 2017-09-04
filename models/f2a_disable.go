@@ -15,12 +15,15 @@ import (
 
 // F2aDisable f2a disable
 // swagger:model F2aDisable
+
 type F2aDisable struct {
 
 	// password
 	// Required: true
 	Password *string `json:"password"`
 }
+
+/* polymorph F2aDisable password false */
 
 // Validate validates this f2a disable
 func (m *F2aDisable) Validate(formats strfmt.Registry) error {

@@ -605,6 +605,7 @@ func init() {
           "type": "boolean"
         },
         "role": {
+          "type": "array",
           "items": {
             "type": "integer"
           }
@@ -663,6 +664,7 @@ func init() {
           ]
         },
         "role": {
+          "type": "array",
           "items": {
             "type": "integer"
           }

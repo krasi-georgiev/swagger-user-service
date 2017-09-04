@@ -15,6 +15,7 @@ import (
 
 // F2aEnable f2a enable
 // swagger:model F2aEnable
+
 type F2aEnable struct {
 
 	// the 2 factor code generted by the android app after scanning the barcode
@@ -25,6 +26,10 @@ type F2aEnable struct {
 	// Required: true
 	Secret *string `json:"secret"`
 }
+
+/* polymorph F2aEnable code false */
+
+/* polymorph F2aEnable secret false */
 
 // Validate validates this f2a enable
 func (m *F2aEnable) Validate(formats strfmt.Registry) error {

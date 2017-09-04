@@ -15,6 +15,7 @@ import (
 
 // Login login
 // swagger:model Login
+
 type Login struct {
 
 	// password
@@ -25,6 +26,10 @@ type Login struct {
 	// Required: true
 	Username *string `json:"username"`
 }
+
+/* polymorph Login password false */
+
+/* polymorph Login username false */
 
 // Validate validates this login
 func (m *Login) Validate(formats strfmt.Registry) error {

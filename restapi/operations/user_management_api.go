@@ -85,6 +85,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		JwtAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (jwt) x-jwt from header param [x-jwt] has not yet been implemented")
 		},
+
+		// default authorizer is authorized meaning no requests are blocked
+		APIAuthorizer: security.Authorized(),
 	}
 }
 
@@ -117,6 +120,9 @@ type UserManagementAPI struct {
 	// JwtAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-jwt provided in the header
 	JwtAuth func(string) (interface{}, error)
+
+	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
+	APIAuthorizer runtime.Authorizer
 
 	// DeleteUser2faHandler sets the operation handler for the delete user2fa operation
 	DeleteUser2faHandler DeleteUser2faHandler
@@ -301,6 +307,13 @@ func (o *UserManagementAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySc
 		}
 	}
 	return result
+
+}
+
+// Authorizer returns the registered authorizer
+func (o *UserManagementAPI) Authorizer() runtime.Authorizer {
+
+	return o.APIAuthorizer
 
 }
 

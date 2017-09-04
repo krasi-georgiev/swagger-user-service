@@ -15,12 +15,15 @@ import (
 
 // Jwt jwt
 // swagger:model Jwt
+
 type Jwt struct {
 
 	// jwt
 	// Required: true
 	Jwt *string `json:"jwt"`
 }
+
+/* polymorph Jwt jwt false */
 
 // Validate validates this jwt
 func (m *Jwt) Validate(formats strfmt.Registry) error {

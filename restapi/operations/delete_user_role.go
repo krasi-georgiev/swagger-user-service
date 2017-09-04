@@ -73,12 +73,15 @@ func (o *DeleteUserRole) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 // DeleteUserRoleBody delete user role body
 // swagger:model DeleteUserRoleBody
+
 type DeleteUserRoleBody struct {
 
 	// id
 	// Required: true
 	ID *int64 `json:"id"`
 }
+
+/* polymorph DeleteUserRoleBody id false */
 
 // MarshalBinary interface implementation
 func (o *DeleteUserRoleBody) MarshalBinary() ([]byte, error) {

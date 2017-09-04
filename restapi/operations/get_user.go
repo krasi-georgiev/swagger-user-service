@@ -75,6 +75,7 @@ func (o *GetUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 // GetUserOKBodyItems0 get user o k body items0
 // swagger:model GetUserOKBodyItems0
+
 type GetUserOKBodyItems0 struct {
 
 	// created
@@ -89,6 +90,14 @@ type GetUserOKBodyItems0 struct {
 	// username
 	Username string `json:"username,omitempty"`
 }
+
+/* polymorph GetUserOKBodyItems0 created false */
+
+/* polymorph GetUserOKBodyItems0 f2a false */
+
+/* polymorph GetUserOKBodyItems0 id false */
+
+/* polymorph GetUserOKBodyItems0 username false */
 
 // Validate validates this get user o k body items0
 func (o *GetUserOKBodyItems0) Validate(formats strfmt.Registry) error {

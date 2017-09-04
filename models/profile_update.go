@@ -17,6 +17,7 @@ import (
 
 // ProfileUpdate profile update
 // swagger:model ProfileUpdate
+
 type ProfileUpdate struct {
 
 	// active
@@ -39,7 +40,7 @@ type ProfileUpdate struct {
 	ResetPasswordNextLogin string `json:"reset_password_next_login,omitempty"`
 
 	// role
-	Role []int64 `json:"role,omitempty"`
+	Role []int64 `json:"role"`
 
 	// tenant id
 	TenantID int64 `json:"tenant_id,omitempty"`
@@ -47,6 +48,24 @@ type ProfileUpdate struct {
 	// username
 	Username string `json:"username,omitempty"`
 }
+
+/* polymorph ProfileUpdate active false */
+
+/* polymorph ProfileUpdate email false */
+
+/* polymorph ProfileUpdate id false */
+
+/* polymorph ProfileUpdate password false */
+
+/* polymorph ProfileUpdate person_id false */
+
+/* polymorph ProfileUpdate reset_password_next_login false */
+
+/* polymorph ProfileUpdate role false */
+
+/* polymorph ProfileUpdate tenant_id false */
+
+/* polymorph ProfileUpdate username false */
 
 // Validate validates this profile update
 func (m *ProfileUpdate) Validate(formats strfmt.Registry) error {

@@ -73,12 +73,15 @@ func (o *DeleteUserManagement) ServeHTTP(rw http.ResponseWriter, r *http.Request
 
 // DeleteUserManagementBody delete user management body
 // swagger:model DeleteUserManagementBody
+
 type DeleteUserManagementBody struct {
 
 	// id profile
 	// Required: true
 	IDProfile *int64 `json:"id_profile"`
 }
+
+/* polymorph DeleteUserManagementBody id_profile false */
 
 // MarshalBinary interface implementation
 func (o *DeleteUserManagementBody) MarshalBinary() ([]byte, error) {

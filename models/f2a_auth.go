@@ -15,6 +15,7 @@ import (
 
 // F2aAuth f2a auth
 // swagger:model F2aAuth
+
 type F2aAuth struct {
 
 	// the  2 factor time code accuired from the google authenticator app
@@ -25,6 +26,10 @@ type F2aAuth struct {
 	// Required: true
 	Jwt *string `json:"jwt"`
 }
+
+/* polymorph F2aAuth f2a false */
+
+/* polymorph F2aAuth jwt false */
 
 // Validate validates this f2a auth
 func (m *F2aAuth) Validate(formats strfmt.Registry) error {

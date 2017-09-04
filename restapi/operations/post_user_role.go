@@ -76,12 +76,15 @@ func (o *PostUserRole) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 // PostUserRoleOKBody post user role o k body
 // swagger:model PostUserRoleOKBody
+
 type PostUserRoleOKBody struct {
 
 	// id
 	// Required: true
 	ID *int64 `json:"id"`
 }
+
+/* polymorph PostUserRoleOKBody id false */
 
 // Validate validates this post user role o k body
 func (o *PostUserRoleOKBody) Validate(formats strfmt.Registry) error {

@@ -76,12 +76,15 @@ func (o *PostUserManagement) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 
 // PostUserManagementOKBody post user management o k body
 // swagger:model PostUserManagementOKBody
+
 type PostUserManagementOKBody struct {
 
 	// id profile
 	// Required: true
 	IDProfile *int64 `json:"id_profile"`
 }
+
+/* polymorph PostUserManagementOKBody id_profile false */
 
 // Validate validates this post user management o k body
 func (o *PostUserManagementOKBody) Validate(formats strfmt.Registry) error {

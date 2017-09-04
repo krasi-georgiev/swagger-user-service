@@ -15,6 +15,7 @@ import (
 
 // UserRole user role
 // swagger:model UserRole
+
 type UserRole struct {
 
 	// data
@@ -29,6 +30,12 @@ type UserRole struct {
 	// Required: true
 	Name *string `json:"name"`
 }
+
+/* polymorph UserRole data false */
+
+/* polymorph UserRole id false */
+
+/* polymorph UserRole name false */
 
 // Validate validates this user role
 func (m *UserRole) Validate(formats strfmt.Registry) error {

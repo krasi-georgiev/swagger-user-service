@@ -76,6 +76,7 @@ func (o *GetUser2fa) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 // GetUser2faOKBody get user2fa o k body
 // swagger:model GetUser2faOKBody
+
 type GetUser2faOKBody struct {
 
 	// qr
@@ -86,6 +87,10 @@ type GetUser2faOKBody struct {
 	// Required: true
 	Secret *string `json:"secret"`
 }
+
+/* polymorph GetUser2faOKBody qr false */
+
+/* polymorph GetUser2faOKBody secret false */
 
 // Validate validates this get user2fa o k body
 func (o *GetUser2faOKBody) Validate(formats strfmt.Registry) error {
