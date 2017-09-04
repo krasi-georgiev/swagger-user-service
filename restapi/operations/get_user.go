@@ -89,6 +89,9 @@ type GetUserOKBodyItems0 struct {
 
 	// username
 	Username string `json:"username,omitempty"`
+
+	// voice
+	Voice int64 `json:"voice,omitempty"`
 }
 
 /* polymorph GetUserOKBodyItems0 created false */
@@ -98,6 +101,8 @@ type GetUserOKBodyItems0 struct {
 /* polymorph GetUserOKBodyItems0 id false */
 
 /* polymorph GetUserOKBodyItems0 username false */
+
+/* polymorph GetUserOKBodyItems0 voice false */
 
 // Validate validates this get user o k body items0
 func (o *GetUserOKBodyItems0) Validate(formats strfmt.Registry) error {

@@ -48,6 +48,9 @@ type Profile struct {
 	// username
 	// Required: true
 	Username *string `json:"username"`
+
+	// voice
+	Voice bool `json:"voice,omitempty"`
 }
 
 /* polymorph Profile active false */
@@ -65,6 +68,8 @@ type Profile struct {
 /* polymorph Profile tenant_id false */
 
 /* polymorph Profile username false */
+
+/* polymorph Profile voice false */
 
 // Validate validates this profile
 func (m *Profile) Validate(formats strfmt.Registry) error {

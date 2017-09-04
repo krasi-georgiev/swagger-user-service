@@ -47,6 +47,9 @@ type ProfileUpdate struct {
 
 	// username
 	Username string `json:"username,omitempty"`
+
+	// voice
+	Voice string `json:"voice,omitempty"`
 }
 
 /* polymorph ProfileUpdate active false */
@@ -66,6 +69,8 @@ type ProfileUpdate struct {
 /* polymorph ProfileUpdate tenant_id false */
 
 /* polymorph ProfileUpdate username false */
+
+/* polymorph ProfileUpdate voice false */
 
 // Validate validates this profile update
 func (m *ProfileUpdate) Validate(formats strfmt.Registry) error {
@@ -87,6 +92,11 @@ func (m *ProfileUpdate) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRole(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateVoice(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -192,6 +202,47 @@ func (m *ProfileUpdate) validateRole(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Role) { // not required
 		return nil
+	}
+
+	return nil
+}
+
+var profileUpdateTypeVoicePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["true","false"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		profileUpdateTypeVoicePropEnum = append(profileUpdateTypeVoicePropEnum, v)
+	}
+}
+
+const (
+	// ProfileUpdateVoiceTrue captures enum value "true"
+	ProfileUpdateVoiceTrue string = "true"
+	// ProfileUpdateVoiceFalse captures enum value "false"
+	ProfileUpdateVoiceFalse string = "false"
+)
+
+// prop value enum
+func (m *ProfileUpdate) validateVoiceEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, profileUpdateTypeVoicePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ProfileUpdate) validateVoice(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Voice) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateVoiceEnum("voice", "body", m.Voice); err != nil {
+		return err
 	}
 
 	return nil

@@ -17,6 +17,7 @@ import (
 type GetUserURL struct {
 	Limit  *int64
 	Offset *int64
+	Voice  *bool
 
 	_basePath string
 	// avoid unkeyed usage
@@ -66,6 +67,14 @@ func (o *GetUserURL) Build() (*url.URL, error) {
 	}
 	if offset != "" {
 		qs.Set("offset", offset)
+	}
+
+	var voice string
+	if o.Voice != nil {
+		voice = swag.FormatBool(*o.Voice)
+	}
+	if voice != "" {
+		qs.Set("voice", voice)
 	}
 
 	result.RawQuery = qs.Encode()

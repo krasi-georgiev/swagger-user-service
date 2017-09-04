@@ -103,7 +103,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.GetUserHandler = operations.GetUserHandlerFunc(func(params operations.GetUserParams, principal interface{}) middleware.Responder {
 		var (
-			f2a, id           int64
+			f2a, id, voice    int64
 			username, created sql.NullString
 		)
 
@@ -116,18 +116,23 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			offset = " OFFSET " + strconv.Itoa(int(*params.Offset))
 		}
 
-		rows, err := db.Query("select id, username,created,CASE WHEN f2a IS NULL THEN -1 ELSE 1 end as f2a from public.user" + limit + offset + ";")
+		var voiceFilter string
+		if *params.Voice == true {
+			voiceFilter = " WHERE  voice is TRUE"
+		}
+
+		rows, err := db.Query("select id, username,created,CASE WHEN voice IS false THEN -1 ELSE 1 end as voice,CASE WHEN f2a IS NULL THEN -1 ELSE 1 end as f2a from public.user" + voiceFilter + limit + offset + ";")
 		if err != nil {
 			log.Println(err)
 			return operations.NewGetUserDefault(0)
 		}
 		var users []*operations.GetUserOKBodyItems0
 		for rows.Next() {
-			if err := rows.Scan(&id, &username, &created, &f2a); err != nil {
+			if err := rows.Scan(&id, &username, &created, &voice, &f2a); err != nil {
 				log.Println(err)
 				return operations.NewGetUserDefault(0)
 			}
-			users = append(users, &operations.GetUserOKBodyItems0{Created: created.String, F2a: f2a, ID: id, Username: username.String})
+			users = append(users, &operations.GetUserOKBodyItems0{Created: created.String, Voice: voice, F2a: f2a, ID: id, Username: username.String})
 
 		}
 		return operations.NewGetUserOK().WithPayload(users)
@@ -196,15 +201,15 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		roles = roles[:len(roles)-1]
 		query := `
 		WITH profileInsert as (
-			INSERT INTO public.user (username,email,active, password,tenant_id,created,reset_password_next_login,person_id)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8)	RETURNING id),
+			INSERT INTO public.user (username,email,active,voice password,tenant_id,created,reset_password_next_login,person_id)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)	RETURNING id),
 			insertProfileRole as (
 				INSERT INTO user_role (user_id,role_id)
 				VALUES ` + roles + `
 				)
 			SELECT * FROM profileInsert`
 
-		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin,params.Body.PersonID).Scan(&id)
+		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, params.Body.Voice, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin, params.Body.PersonID).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserManagementDefault(0)
@@ -241,6 +246,17 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			}
 			_, err = tx.Exec("UPDATE public.user SET active=$1  WHERE id=$2;", active, params.Body.ID)
 
+		}
+
+		if params.Body.Voice != "" {
+			var voice bool
+			switch params.Body.Voice {
+			case "true":
+				voice = true
+			default:
+				voice = false
+			}
+			_, err = tx.Exec("UPDATE public.user SET voice=$1  WHERE id=$2;", voice, params.Body.ID)
 		}
 
 		if params.Body.Email != "" {
@@ -620,8 +636,6 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	})
 
-
-
 	api.DeleteUserRoleHandler = operations.DeleteUserRoleHandlerFunc(func(params operations.DeleteUserRoleParams, principal interface{}) middleware.Responder {
 		r, err := db.Exec("DELETE FROM role WHERE id=$1 ;", params.Body.ID)
 		if err != nil {
@@ -637,11 +651,11 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.GetUserRoleHandler = operations.GetUserRoleHandlerFunc(func(params operations.GetUserRoleParams, principal interface{}) middleware.Responder {
 
-
 		var limit string
 		if params.Limit != nil {
 			limit = " LIMIT " + strconv.Itoa(int(*params.Limit))
 		}
+
 		var offset string
 		if params.Offset != nil {
 			offset = " OFFSET " + strconv.Itoa(int(*params.Offset))
@@ -656,13 +670,13 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		for rows.Next() {
 			var (
 				id         int64
-				name,data string
+				name, data string
 			)
-			if err := rows.Scan(&id, &name,&data); err != nil {
+			if err := rows.Scan(&id, &name, &data); err != nil {
 				log.Println(err)
 				return operations.NewGetUserRoleDefault(0)
 			}
-			roles = append(roles, &models.UserRole{ID: &id, Name: &name,Data: &data})
+			roles = append(roles, &models.UserRole{ID: &id, Name: &name, Data: &data})
 		}
 
 		return operations.NewGetUserRoleOK().WithPayload(roles)
@@ -670,7 +684,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.PostUserRoleHandler = operations.PostUserRoleHandlerFunc(func(params operations.PostUserRoleParams, principal interface{}) middleware.Responder {
 		var id int64
-		err := db.QueryRow("INSERT INTO role (name,data)	VALUES ($1)	RETURNING id", *params.Body.Name,*params.Body.Data).Scan(&id)
+		err := db.QueryRow("INSERT INTO role (name,data)	VALUES ($1)	RETURNING id", *params.Body.Name, *params.Body.Data).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserRoleDefault(0)
@@ -679,12 +693,12 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	})
 
 	api.PutUserRoleHandler = operations.PutUserRoleHandlerFunc(func(params operations.PutUserRoleParams, principal interface{}) middleware.Responder {
-		result, err := db.Exec("UPDATE role SET name=$1,data=$2 WHERE id=$3 ;", params.Body.Name,params.Body.Data, params.Body.ID)
+		result, err := db.Exec("UPDATE role SET name=$1,data=$2 WHERE id=$3 ;", params.Body.Name, params.Body.Data, params.Body.ID)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPutUserRoleDefault(0)
 		}
-		if count, err := result.RowsAffected(); err != nil || count ==0 {
+		if count, err := result.RowsAffected(); err != nil || count == 0 {
 			return operations.NewPutUserRoleDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role id not found")}))
 		}
 		return operations.NewPutUserRoleOK()

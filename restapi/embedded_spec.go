@@ -45,6 +45,12 @@ func init() {
             "description": "The numbers of items to return",
             "name": "limit",
             "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "return only users with voice activated",
+            "name": "voice",
+            "in": "query"
           }
         ],
         "responses": {
@@ -65,6 +71,9 @@ func init() {
                   },
                   "username": {
                     "type": "string"
+                  },
+                  "voice": {
+                    "type": "integer"
                   }
                 }
               }
@@ -615,6 +624,9 @@ func init() {
         },
         "username": {
           "type": "string"
+        },
+        "voice": {
+          "type": "boolean"
         }
       },
       "example": {
@@ -628,7 +640,8 @@ func init() {
           2
         ],
         "tenant_id": 1,
-        "username": "username"
+        "username": "username",
+        "voice": true
       }
     },
     "ProfileUpdate": {
@@ -674,6 +687,13 @@ func init() {
         },
         "username": {
           "type": "string"
+        },
+        "voice": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
         }
       },
       "example": {
@@ -688,7 +708,8 @@ func init() {
           2
         ],
         "tenant_id": 1,
-        "username": "username"
+        "username": "username",
+        "voice": "true"
       }
     },
     "Response": {

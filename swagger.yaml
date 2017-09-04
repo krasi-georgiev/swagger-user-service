@@ -25,6 +25,10 @@ paths:
           name: limit
           type: integer
           description: The numbers of items to return
+        - in: query
+          name: voice
+          type: boolean
+          description: return only users with voice activated
       responses:
         200:
           description:  full user list
@@ -39,6 +43,8 @@ paths:
                 created:
                   type: string
                 f2a:
+                  type: integer
+                voice:
                   type: integer
         default:
           $ref: "#/responses/DefaultError"
@@ -406,11 +412,14 @@ definitions:
           type: integer
         person_id:
           type: integer
+        voice:
+          type: boolean
       example:
             username: "username"
             email: "admin@mail.com"
             password: "password"
             active: true
+            voice: true
             reset_password_next_login: false
             tenant_id: 1
             person_id: 1
@@ -439,6 +448,11 @@ definitions:
         enum:
           - "true"
           - "false"
+      voice:
+        type: string
+        enum:
+          - "true"
+          - "false"
       email:
         type: string
       role:
@@ -456,6 +470,7 @@ definitions:
           password: "password"
           reset_password_next_login: "false"
           active: "true"
+          voice: "true"
           tenant_id: 1
           person_id: 1
           role:
