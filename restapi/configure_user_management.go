@@ -117,7 +117,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		}
 
 		var voiceFilter string
-		if *params.Voice == true {
+		if params.Voice != nil && *params.Voice == true {
 			voiceFilter = " WHERE  voice is TRUE"
 		}
 
