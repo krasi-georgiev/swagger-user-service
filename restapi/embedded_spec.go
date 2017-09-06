@@ -594,7 +594,6 @@ func init() {
         "active",
         "role",
         "tenant_id",
-        "person_id",
         "reset_password_next_login"
       ],
       "properties": {
@@ -608,7 +607,8 @@ func init() {
           "type": "string"
         },
         "person_id": {
-          "type": "integer"
+          "type": "integer",
+          "x-nullable": true
         },
         "reset_password_next_login": {
           "type": "boolean"

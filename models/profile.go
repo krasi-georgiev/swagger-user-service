@@ -30,8 +30,7 @@ type Profile struct {
 	Password *string `json:"password"`
 
 	// person id
-	// Required: true
-	PersonID *int64 `json:"person_id"`
+	PersonID *int64 `json:"person_id,omitempty"`
 
 	// reset password next login
 	// Required: true
@@ -85,11 +84,6 @@ func (m *Profile) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validatePersonID(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateResetPasswordNextLogin(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -128,15 +122,6 @@ func (m *Profile) validateActive(formats strfmt.Registry) error {
 func (m *Profile) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.Required("password", "body", m.Password); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Profile) validatePersonID(formats strfmt.Registry) error {
-
-	if err := validate.Required("person_id", "body", m.PersonID); err != nil {
 		return err
 	}
 

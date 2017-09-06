@@ -7,6 +7,8 @@ openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
 
 TODO:
 
+add /user/login(PUT) to validate a token - return the data about this user - if voice enabled!
+
 setup proper permissions check for all endpoints and improve the pass reset handling
 
 testing ???

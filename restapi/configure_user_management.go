@@ -201,7 +201,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		roles = roles[:len(roles)-1]
 		query := `
 		WITH profileInsert as (
-			INSERT INTO public.user (username,email,active,voice password,tenant_id,created,reset_password_next_login,person_id)
+			INSERT INTO public.user (username,email,active,voice, password,tenant_id,created,reset_password_next_login,person_id)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)	RETURNING id),
 			insertProfileRole as (
 				INSERT INTO user_role (user_id,role_id)
