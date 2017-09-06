@@ -88,7 +88,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.JwtAuth = func(token string) (interface{}, error) {
 		t, err := ParseJwt(token)
 		if err != nil {
-			return nil, err
+			return nil, errors.New(401, "authentication failed")
 		}
 
 		if t.F2a {
