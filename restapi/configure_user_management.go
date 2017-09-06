@@ -492,13 +492,20 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			log.Println(err)
 			return operations.NewPutUserLoginDefault(0)
 		}
+
+		var personID *int64
+		if person_id.Valid {
+			personID = &person_id.Int64
+		} else {
+			personID = nil
+		}
 		return operations.NewPutUserLoginOK().WithPayload(&models.ProfileInfo{
 			Active:                 &active,
 			Created:                &created,
 			Email:                  &email.String,
 			F2a:                    &f2a,
 			ID:                     &id,
-			PersonID:               &person_id.Int64,
+			PersonID:               personID,
 			ResetPasswordNextLogin: &reset_password_next_login,
 			TenantID:               &tenant_id,
 			Username:               &username,

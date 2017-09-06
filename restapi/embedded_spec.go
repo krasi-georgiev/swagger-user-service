@@ -668,7 +668,6 @@ func init() {
         "created",
         "reset_password_next_login",
         "voice",
-        "person_id",
         "email",
         "f2a"
       ],
@@ -689,7 +688,8 @@ func init() {
           "type": "integer"
         },
         "person_id": {
-          "type": "integer"
+          "type": "integer",
+          "x-nullable": true
         },
         "reset_password_next_login": {
           "type": "boolean"

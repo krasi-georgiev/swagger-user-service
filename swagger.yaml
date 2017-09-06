@@ -496,7 +496,6 @@ definitions:
         - created
         - reset_password_next_login
         - voice
-        - person_id
         - email
         - f2a
       properties:
@@ -516,6 +515,7 @@ definitions:
           type: boolean
         person_id:
           type: integer
+          x-nullable: true
         email:
           type: string
         f2a:

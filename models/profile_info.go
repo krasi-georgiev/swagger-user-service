@@ -39,8 +39,7 @@ type ProfileInfo struct {
 	ID *int64 `json:"id"`
 
 	// person id
-	// Required: true
-	PersonID *int64 `json:"person_id"`
+	PersonID *int64 `json:"person_id,omitempty"`
 
 	// reset password next login
 	// Required: true
@@ -104,11 +103,6 @@ func (m *ProfileInfo) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateID(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validatePersonID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -178,15 +172,6 @@ func (m *ProfileInfo) validateF2a(formats strfmt.Registry) error {
 func (m *ProfileInfo) validateID(formats strfmt.Registry) error {
 
 	if err := validate.Required("id", "body", m.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ProfileInfo) validatePersonID(formats strfmt.Registry) error {
-
-	if err := validate.Required("person_id", "body", m.PersonID); err != nil {
 		return err
 	}
 
