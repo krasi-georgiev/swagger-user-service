@@ -71,6 +71,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		PutUser2faHandler: PutUser2faHandlerFunc(func(params PutUser2faParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUser2fa has not yet been implemented")
 		}),
+		PutUserLoginHandler: PutUserLoginHandlerFunc(func(params PutUserLoginParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserLogin has not yet been implemented")
+		}),
 		PutUserManagementHandler: PutUserManagementHandlerFunc(func(params PutUserManagementParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserManagement has not yet been implemented")
 		}),
@@ -148,6 +151,8 @@ type UserManagementAPI struct {
 	PostUserRoleHandler PostUserRoleHandler
 	// PutUser2faHandler sets the operation handler for the put user2fa operation
 	PutUser2faHandler PutUser2faHandler
+	// PutUserLoginHandler sets the operation handler for the put user login operation
+	PutUserLoginHandler PutUserLoginHandler
 	// PutUserManagementHandler sets the operation handler for the put user management operation
 	PutUserManagementHandler PutUserManagementHandler
 	// PutUserPasswordHandler sets the operation handler for the put user password operation
@@ -267,6 +272,10 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.PutUser2faHandler == nil {
 		unregistered = append(unregistered, "PutUser2faHandler")
+	}
+
+	if o.PutUserLoginHandler == nil {
+		unregistered = append(unregistered, "PutUserLoginHandler")
 	}
 
 	if o.PutUserManagementHandler == nil {
@@ -440,6 +449,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/user/2fa"] = NewPutUser2fa(o.context, o.PutUser2faHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/login"] = NewPutUserLogin(o.context, o.PutUserLoginHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

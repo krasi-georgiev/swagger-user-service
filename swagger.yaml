@@ -48,7 +48,17 @@ paths:
                   type: integer
         default:
           $ref: "#/responses/DefaultError"
+  
   /user/login:
+    put:
+      summary: verify and parse a login token and return all user info 
+      responses:
+          200:
+            description: the user info associated with this token
+            schema:
+              $ref: "#/definitions/ProfileInfo"
+          default:
+            $ref: "#/responses/DefaultError"
     post:
       security: []
       summary: generates a swt token to use for authentication
@@ -476,6 +486,41 @@ definitions:
           role:
             - 1
             - 2
+  ProfileInfo:
+      type: object
+      required:
+        - id
+        - username
+        - tenant_id
+        - active
+        - created
+        - reset_password_next_login
+        - voice
+        - person_id
+        - email
+        - f2a
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        tenant_id:
+          type: integer
+        active:
+          type: boolean
+        created:
+          type: string
+        reset_password_next_login:
+          type: boolean
+        voice:
+          type: boolean
+        person_id:
+          type: integer
+        email:
+          type: string
+        f2a:
+          type: boolean
+      
   UserRole:
       type: object
       required:

@@ -184,6 +184,20 @@ func init() {
       }
     },
     "/user/login": {
+      "put": {
+        "summary": "verify and parse a login token and return all user info",
+        "responses": {
+          "200": {
+            "description": "the user info associated with this token",
+            "schema": {
+              "$ref": "#/definitions/ProfileInfo"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
       "post": {
         "summary": "generates a swt token to use for authentication",
         "parameters": [
@@ -642,6 +656,53 @@ func init() {
         "tenant_id": 1,
         "username": "username",
         "voice": true
+      }
+    },
+    "ProfileInfo": {
+      "type": "object",
+      "required": [
+        "id",
+        "username",
+        "tenant_id",
+        "active",
+        "created",
+        "reset_password_next_login",
+        "voice",
+        "person_id",
+        "email",
+        "f2a"
+      ],
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "created": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "f2a": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "person_id": {
+          "type": "integer"
+        },
+        "reset_password_next_login": {
+          "type": "boolean"
+        },
+        "tenant_id": {
+          "type": "integer"
+        },
+        "username": {
+          "type": "string"
+        },
+        "voice": {
+          "type": "boolean"
+        }
       }
     },
     "ProfileUpdate": {
