@@ -8,7 +8,11 @@ package operations
 import (
 	"net/http"
 
+	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
+	validate "github.com/go-openapi/validate"
 )
 
 // PutUserLoginHandlerFunc turns a function with the right signature into a put user login handler
@@ -68,4 +72,238 @@ func (o *PutUserLogin) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// PutUserLoginOKBody put user login o k body
+// swagger:model PutUserLoginOKBody
+
+type PutUserLoginOKBody struct {
+
+	// active
+	// Required: true
+	Active *bool `json:"active"`
+
+	// created
+	// Required: true
+	Created *string `json:"created"`
+
+	// email
+	// Required: true
+	Email *string `json:"email"`
+
+	// f2a
+	// Required: true
+	F2a *bool `json:"f2a"`
+
+	// id
+	// Required: true
+	ID *int64 `json:"id"`
+
+	// person id
+	// Required: true
+	PersonID *int64 `json:"person_id"`
+
+	// reset password next login
+	// Required: true
+	ResetPasswordNextLogin *bool `json:"reset_password_next_login"`
+
+	// tenant id
+	// Required: true
+	TenantID *int64 `json:"tenant_id"`
+
+	// username
+	// Required: true
+	Username *string `json:"username"`
+
+	// voice
+	// Required: true
+	Voice *bool `json:"voice"`
+}
+
+/* polymorph PutUserLoginOKBody active false */
+
+/* polymorph PutUserLoginOKBody created false */
+
+/* polymorph PutUserLoginOKBody email false */
+
+/* polymorph PutUserLoginOKBody f2a false */
+
+/* polymorph PutUserLoginOKBody id false */
+
+/* polymorph PutUserLoginOKBody person_id false */
+
+/* polymorph PutUserLoginOKBody reset_password_next_login false */
+
+/* polymorph PutUserLoginOKBody tenant_id false */
+
+/* polymorph PutUserLoginOKBody username false */
+
+/* polymorph PutUserLoginOKBody voice false */
+
+// Validate validates this put user login o k body
+func (o *PutUserLoginOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateActive(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateCreated(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateEmail(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateF2a(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validatePersonID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateResetPasswordNextLogin(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateTenantID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateUsername(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := o.validateVoice(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateActive(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"active", "body", o.Active); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateCreated(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"created", "body", o.Created); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateEmail(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"email", "body", o.Email); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateF2a(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"f2a", "body", o.F2a); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateID(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"id", "body", o.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validatePersonID(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"person_id", "body", o.PersonID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateResetPasswordNextLogin(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"reset_password_next_login", "body", o.ResetPasswordNextLogin); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateTenantID(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"tenant_id", "body", o.TenantID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateUsername(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"username", "body", o.Username); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutUserLoginOKBody) validateVoice(formats strfmt.Registry) error {
+
+	if err := validate.Required("putUserLoginOK"+"."+"voice", "body", o.Voice); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PutUserLoginOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PutUserLoginOKBody) UnmarshalBinary(b []byte) error {
+	var res PutUserLoginOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

@@ -35,53 +35,53 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		BearerAuthenticator: security.BearerAuth,
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
-		DeleteUser2faHandler: DeleteUser2faHandlerFunc(func(params DeleteUser2faParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation DeleteUser2fa has not yet been implemented")
+		DeleteUserIDHandler: DeleteUserIDHandlerFunc(func(params DeleteUserIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUserID has not yet been implemented")
 		}),
-		DeleteUserManagementHandler: DeleteUserManagementHandlerFunc(func(params DeleteUserManagementParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation DeleteUserManagement has not yet been implemented")
+		DeleteUserIDF2aHandler: DeleteUserIDF2aHandlerFunc(func(params DeleteUserIDF2aParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUserIDF2a has not yet been implemented")
 		}),
-		DeleteUserRoleHandler: DeleteUserRoleHandlerFunc(func(params DeleteUserRoleParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation DeleteUserRole has not yet been implemented")
+		DeleteUserRoleIDHandler: DeleteUserRoleIDHandlerFunc(func(params DeleteUserRoleIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation DeleteUserRoleID has not yet been implemented")
 		}),
-		GetUserHandler: GetUserHandlerFunc(func(params GetUserParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation GetUser has not yet been implemented")
+		GetUserF2aHandler: GetUserF2aHandlerFunc(func(params GetUserF2aParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUserF2a has not yet been implemented")
 		}),
-		GetUser2faHandler: GetUser2faHandlerFunc(func(params GetUser2faParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation GetUser2fa has not yet been implemented")
+		GetUserRolesHandler: GetUserRolesHandlerFunc(func(params GetUserRolesParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUserRoles has not yet been implemented")
 		}),
-		GetUserRoleHandler: GetUserRoleHandlerFunc(func(params GetUserRoleParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation GetUserRole has not yet been implemented")
+		GetUsersHandler: GetUsersHandlerFunc(func(params GetUsersParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUsers has not yet been implemented")
 		}),
-		PostUser2faHandler: PostUser2faHandlerFunc(func(params PostUser2faParams) middleware.Responder {
-			return middleware.NotImplemented("operation PostUser2fa has not yet been implemented")
+		PostUserHandler: PostUserHandlerFunc(func(params PostUserParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PostUser has not yet been implemented")
+		}),
+		PostUserF2aHandler: PostUserF2aHandlerFunc(func(params PostUserF2aParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserF2a has not yet been implemented")
+		}),
+		PostUserIDPasswordHandler: PostUserIDPasswordHandlerFunc(func(params PostUserIDPasswordParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserIDPassword has not yet been implemented")
 		}),
 		PostUserLoginHandler: PostUserLoginHandlerFunc(func(params PostUserLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation PostUserLogin has not yet been implemented")
 		}),
-		PostUserManagementHandler: PostUserManagementHandlerFunc(func(params PostUserManagementParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PostUserManagement has not yet been implemented")
-		}),
-		PostUserPasswordHandler: PostUserPasswordHandlerFunc(func(params PostUserPasswordParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PostUserPassword has not yet been implemented")
-		}),
 		PostUserRoleHandler: PostUserRoleHandlerFunc(func(params PostUserRoleParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PostUserRole has not yet been implemented")
 		}),
-		PutUser2faHandler: PutUser2faHandlerFunc(func(params PutUser2faParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PutUser2fa has not yet been implemented")
+		PutUserIDHandler: PutUserIDHandlerFunc(func(params PutUserIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserID has not yet been implemented")
+		}),
+		PutUserIDF2aHandler: PutUserIDF2aHandlerFunc(func(params PutUserIDF2aParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserIDF2a has not yet been implemented")
+		}),
+		PutUserIDPasswordHandler: PutUserIDPasswordHandlerFunc(func(params PutUserIDPasswordParams) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserIDPassword has not yet been implemented")
 		}),
 		PutUserLoginHandler: PutUserLoginHandlerFunc(func(params PutUserLoginParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserLogin has not yet been implemented")
 		}),
-		PutUserManagementHandler: PutUserManagementHandlerFunc(func(params PutUserManagementParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PutUserManagement has not yet been implemented")
-		}),
-		PutUserPasswordHandler: PutUserPasswordHandlerFunc(func(params PutUserPasswordParams) middleware.Responder {
-			return middleware.NotImplemented("operation PutUserPassword has not yet been implemented")
-		}),
-		PutUserRoleHandler: PutUserRoleHandlerFunc(func(params PutUserRoleParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PutUserRole has not yet been implemented")
+		PutUserRoleIDHandler: PutUserRoleIDHandlerFunc(func(params PutUserRoleIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation PutUserRoleID has not yet been implemented")
 		}),
 
 		// Applies when the "x-jwt" header is set
@@ -127,38 +127,38 @@ type UserManagementAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
-	// DeleteUser2faHandler sets the operation handler for the delete user2fa operation
-	DeleteUser2faHandler DeleteUser2faHandler
-	// DeleteUserManagementHandler sets the operation handler for the delete user management operation
-	DeleteUserManagementHandler DeleteUserManagementHandler
-	// DeleteUserRoleHandler sets the operation handler for the delete user role operation
-	DeleteUserRoleHandler DeleteUserRoleHandler
-	// GetUserHandler sets the operation handler for the get user operation
-	GetUserHandler GetUserHandler
-	// GetUser2faHandler sets the operation handler for the get user2fa operation
-	GetUser2faHandler GetUser2faHandler
-	// GetUserRoleHandler sets the operation handler for the get user role operation
-	GetUserRoleHandler GetUserRoleHandler
-	// PostUser2faHandler sets the operation handler for the post user2fa operation
-	PostUser2faHandler PostUser2faHandler
+	// DeleteUserIDHandler sets the operation handler for the delete user ID operation
+	DeleteUserIDHandler DeleteUserIDHandler
+	// DeleteUserIDF2aHandler sets the operation handler for the delete user ID f2a operation
+	DeleteUserIDF2aHandler DeleteUserIDF2aHandler
+	// DeleteUserRoleIDHandler sets the operation handler for the delete user role ID operation
+	DeleteUserRoleIDHandler DeleteUserRoleIDHandler
+	// GetUserF2aHandler sets the operation handler for the get user f2a operation
+	GetUserF2aHandler GetUserF2aHandler
+	// GetUserRolesHandler sets the operation handler for the get user roles operation
+	GetUserRolesHandler GetUserRolesHandler
+	// GetUsersHandler sets the operation handler for the get users operation
+	GetUsersHandler GetUsersHandler
+	// PostUserHandler sets the operation handler for the post user operation
+	PostUserHandler PostUserHandler
+	// PostUserF2aHandler sets the operation handler for the post user f2a operation
+	PostUserF2aHandler PostUserF2aHandler
+	// PostUserIDPasswordHandler sets the operation handler for the post user ID password operation
+	PostUserIDPasswordHandler PostUserIDPasswordHandler
 	// PostUserLoginHandler sets the operation handler for the post user login operation
 	PostUserLoginHandler PostUserLoginHandler
-	// PostUserManagementHandler sets the operation handler for the post user management operation
-	PostUserManagementHandler PostUserManagementHandler
-	// PostUserPasswordHandler sets the operation handler for the post user password operation
-	PostUserPasswordHandler PostUserPasswordHandler
 	// PostUserRoleHandler sets the operation handler for the post user role operation
 	PostUserRoleHandler PostUserRoleHandler
-	// PutUser2faHandler sets the operation handler for the put user2fa operation
-	PutUser2faHandler PutUser2faHandler
+	// PutUserIDHandler sets the operation handler for the put user ID operation
+	PutUserIDHandler PutUserIDHandler
+	// PutUserIDF2aHandler sets the operation handler for the put user ID f2a operation
+	PutUserIDF2aHandler PutUserIDF2aHandler
+	// PutUserIDPasswordHandler sets the operation handler for the put user ID password operation
+	PutUserIDPasswordHandler PutUserIDPasswordHandler
 	// PutUserLoginHandler sets the operation handler for the put user login operation
 	PutUserLoginHandler PutUserLoginHandler
-	// PutUserManagementHandler sets the operation handler for the put user management operation
-	PutUserManagementHandler PutUserManagementHandler
-	// PutUserPasswordHandler sets the operation handler for the put user password operation
-	PutUserPasswordHandler PutUserPasswordHandler
-	// PutUserRoleHandler sets the operation handler for the put user role operation
-	PutUserRoleHandler PutUserRoleHandler
+	// PutUserRoleIDHandler sets the operation handler for the put user role ID operation
+	PutUserRoleIDHandler PutUserRoleIDHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -226,68 +226,68 @@ func (o *UserManagementAPI) Validate() error {
 		unregistered = append(unregistered, "XJwtAuth")
 	}
 
-	if o.DeleteUser2faHandler == nil {
-		unregistered = append(unregistered, "DeleteUser2faHandler")
+	if o.DeleteUserIDHandler == nil {
+		unregistered = append(unregistered, "DeleteUserIDHandler")
 	}
 
-	if o.DeleteUserManagementHandler == nil {
-		unregistered = append(unregistered, "DeleteUserManagementHandler")
+	if o.DeleteUserIDF2aHandler == nil {
+		unregistered = append(unregistered, "DeleteUserIDF2aHandler")
 	}
 
-	if o.DeleteUserRoleHandler == nil {
-		unregistered = append(unregistered, "DeleteUserRoleHandler")
+	if o.DeleteUserRoleIDHandler == nil {
+		unregistered = append(unregistered, "DeleteUserRoleIDHandler")
 	}
 
-	if o.GetUserHandler == nil {
-		unregistered = append(unregistered, "GetUserHandler")
+	if o.GetUserF2aHandler == nil {
+		unregistered = append(unregistered, "GetUserF2aHandler")
 	}
 
-	if o.GetUser2faHandler == nil {
-		unregistered = append(unregistered, "GetUser2faHandler")
+	if o.GetUserRolesHandler == nil {
+		unregistered = append(unregistered, "GetUserRolesHandler")
 	}
 
-	if o.GetUserRoleHandler == nil {
-		unregistered = append(unregistered, "GetUserRoleHandler")
+	if o.GetUsersHandler == nil {
+		unregistered = append(unregistered, "GetUsersHandler")
 	}
 
-	if o.PostUser2faHandler == nil {
-		unregistered = append(unregistered, "PostUser2faHandler")
+	if o.PostUserHandler == nil {
+		unregistered = append(unregistered, "PostUserHandler")
+	}
+
+	if o.PostUserF2aHandler == nil {
+		unregistered = append(unregistered, "PostUserF2aHandler")
+	}
+
+	if o.PostUserIDPasswordHandler == nil {
+		unregistered = append(unregistered, "PostUserIDPasswordHandler")
 	}
 
 	if o.PostUserLoginHandler == nil {
 		unregistered = append(unregistered, "PostUserLoginHandler")
 	}
 
-	if o.PostUserManagementHandler == nil {
-		unregistered = append(unregistered, "PostUserManagementHandler")
-	}
-
-	if o.PostUserPasswordHandler == nil {
-		unregistered = append(unregistered, "PostUserPasswordHandler")
-	}
-
 	if o.PostUserRoleHandler == nil {
 		unregistered = append(unregistered, "PostUserRoleHandler")
 	}
 
-	if o.PutUser2faHandler == nil {
-		unregistered = append(unregistered, "PutUser2faHandler")
+	if o.PutUserIDHandler == nil {
+		unregistered = append(unregistered, "PutUserIDHandler")
+	}
+
+	if o.PutUserIDF2aHandler == nil {
+		unregistered = append(unregistered, "PutUserIDF2aHandler")
+	}
+
+	if o.PutUserIDPasswordHandler == nil {
+		unregistered = append(unregistered, "PutUserIDPasswordHandler")
 	}
 
 	if o.PutUserLoginHandler == nil {
 		unregistered = append(unregistered, "PutUserLoginHandler")
 	}
 
-	if o.PutUserManagementHandler == nil {
-		unregistered = append(unregistered, "PutUserManagementHandler")
-	}
-
-	if o.PutUserPasswordHandler == nil {
-		unregistered = append(unregistered, "PutUserPasswordHandler")
-	}
-
-	if o.PutUserRoleHandler == nil {
-		unregistered = append(unregistered, "PutUserRoleHandler")
+	if o.PutUserRoleIDHandler == nil {
+		unregistered = append(unregistered, "PutUserRoleIDHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -393,37 +393,47 @@ func (o *UserManagementAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/user/2fa"] = NewDeleteUser2fa(o.context, o.DeleteUser2faHandler)
+	o.handlers["DELETE"]["/user/{id}"] = NewDeleteUserID(o.context, o.DeleteUserIDHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/user/management"] = NewDeleteUserManagement(o.context, o.DeleteUserManagementHandler)
+	o.handlers["DELETE"]["/user/{id}/f2a"] = NewDeleteUserIDF2a(o.context, o.DeleteUserIDF2aHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/user/role"] = NewDeleteUserRole(o.context, o.DeleteUserRoleHandler)
+	o.handlers["DELETE"]["/user/role/{id}"] = NewDeleteUserRoleID(o.context, o.DeleteUserRoleIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/user"] = NewGetUser(o.context, o.GetUserHandler)
+	o.handlers["GET"]["/user/f2a"] = NewGetUserF2a(o.context, o.GetUserF2aHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/user/2fa"] = NewGetUser2fa(o.context, o.GetUser2faHandler)
+	o.handlers["GET"]["/user/roles"] = NewGetUserRoles(o.context, o.GetUserRolesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/user/role"] = NewGetUserRole(o.context, o.GetUserRoleHandler)
+	o.handlers["GET"]["/users"] = NewGetUsers(o.context, o.GetUsersHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/user/2fa"] = NewPostUser2fa(o.context, o.PostUser2faHandler)
+	o.handlers["POST"]["/user"] = NewPostUser(o.context, o.PostUserHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user/f2a"] = NewPostUserF2a(o.context, o.PostUserF2aHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/user/{id}/password"] = NewPostUserIDPassword(o.context, o.PostUserIDPasswordHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -433,22 +443,22 @@ func (o *UserManagementAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/user/management"] = NewPostUserManagement(o.context, o.PostUserManagementHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/user/password"] = NewPostUserPassword(o.context, o.PostUserPasswordHandler)
-
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
 	o.handlers["POST"]["/user/role"] = NewPostUserRole(o.context, o.PostUserRoleHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
-	o.handlers["PUT"]["/user/2fa"] = NewPutUser2fa(o.context, o.PutUser2faHandler)
+	o.handlers["PUT"]["/user/{id}"] = NewPutUserID(o.context, o.PutUserIDHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/{id}/f2a"] = NewPutUserIDF2a(o.context, o.PutUserIDF2aHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/user/{id}/password"] = NewPutUserIDPassword(o.context, o.PutUserIDPasswordHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
@@ -458,17 +468,7 @@ func (o *UserManagementAPI) initHandlerCache() {
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
-	o.handlers["PUT"]["/user/management"] = NewPutUserManagement(o.context, o.PutUserManagementHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/user/password"] = NewPutUserPassword(o.context, o.PutUserPasswordHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/user/role"] = NewPutUserRole(o.context, o.PutUserRoleHandler)
+	o.handlers["PUT"]["/user/role/{id}"] = NewPutUserRoleID(o.context, o.PutUserRoleIDHandler)
 
 }
 

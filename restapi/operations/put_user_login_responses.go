@@ -25,7 +25,7 @@ type PutUserLoginOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.ProfileInfo `json:"body,omitempty"`
+	Payload PutUserLoginOKBody `json:"body,omitempty"`
 }
 
 // NewPutUserLoginOK creates PutUserLoginOK with default headers values
@@ -34,13 +34,13 @@ func NewPutUserLoginOK() *PutUserLoginOK {
 }
 
 // WithPayload adds the payload to the put user login o k response
-func (o *PutUserLoginOK) WithPayload(payload *models.ProfileInfo) *PutUserLoginOK {
+func (o *PutUserLoginOK) WithPayload(payload PutUserLoginOKBody) *PutUserLoginOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the put user login o k response
-func (o *PutUserLoginOK) SetPayload(payload *models.ProfileInfo) {
+func (o *PutUserLoginOK) SetPayload(payload PutUserLoginOKBody) {
 	o.Payload = payload
 }
 
@@ -48,12 +48,11 @@ func (o *PutUserLoginOK) SetPayload(payload *models.ProfileInfo) {
 func (o *PutUserLoginOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
+	payload := o.Payload
+	if err := producer.Produce(rw, payload); err != nil {
+		panic(err) // let the recovery middleware deal with this
 	}
+
 }
 
 /*PutUserLoginDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context

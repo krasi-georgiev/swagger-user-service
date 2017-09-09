@@ -18,10 +18,6 @@ import (
 
 type PassReset struct {
 
-	// id profile
-	// Required: true
-	IDProfile *int64 `json:"id_profile"`
-
 	// password new
 	// Required: true
 	PasswordNew *string `json:"password_new"`
@@ -29,8 +25,6 @@ type PassReset struct {
 	// password old
 	PasswordOld string `json:"password_old,omitempty"`
 }
-
-/* polymorph PassReset id_profile false */
 
 /* polymorph PassReset password_new false */
 
@@ -40,11 +34,6 @@ type PassReset struct {
 func (m *PassReset) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateIDProfile(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validatePasswordNew(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -53,15 +42,6 @@ func (m *PassReset) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *PassReset) validateIDProfile(formats strfmt.Registry) error {
-
-	if err := validate.Required("id_profile", "body", m.IDProfile); err != nil {
-		return err
-	}
-
 	return nil
 }
 

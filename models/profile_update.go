@@ -26,10 +26,6 @@ type ProfileUpdate struct {
 	// email
 	Email string `json:"email,omitempty"`
 
-	// id
-	// Required: true
-	ID *int64 `json:"id"`
-
 	// password
 	Password string `json:"password,omitempty"`
 
@@ -56,8 +52,6 @@ type ProfileUpdate struct {
 
 /* polymorph ProfileUpdate email false */
 
-/* polymorph ProfileUpdate id false */
-
 /* polymorph ProfileUpdate password false */
 
 /* polymorph ProfileUpdate person_id false */
@@ -77,11 +71,6 @@ func (m *ProfileUpdate) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateActive(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -142,15 +131,6 @@ func (m *ProfileUpdate) validateActive(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateActiveEnum("active", "body", m.Active); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *ProfileUpdate) validateID(formats strfmt.Registry) error {
-
-	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
 	}
 

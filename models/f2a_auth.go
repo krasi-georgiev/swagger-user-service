@@ -22,7 +22,7 @@ type F2aAuth struct {
 	// Required: true
 	F2a *string `json:"f2a"`
 
-	// the jwt token accuired form the initial login
+	// the jwt token accuired from the initial login
 	// Required: true
 	Jwt *string `json:"jwt"`
 }

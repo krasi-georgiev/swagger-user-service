@@ -22,18 +22,12 @@ type UserRole struct {
 	// Required: true
 	Data *string `json:"data"`
 
-	// id
-	// Required: true
-	ID *int64 `json:"id"`
-
 	// name
 	// Required: true
 	Name *string `json:"name"`
 }
 
 /* polymorph UserRole data false */
-
-/* polymorph UserRole id false */
 
 /* polymorph UserRole name false */
 
@@ -42,11 +36,6 @@ func (m *UserRole) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateData(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -65,15 +54,6 @@ func (m *UserRole) Validate(formats strfmt.Registry) error {
 func (m *UserRole) validateData(formats strfmt.Registry) error {
 
 	if err := validate.Required("data", "body", m.Data); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *UserRole) validateID(formats strfmt.Registry) error {
-
-	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
 	}
 

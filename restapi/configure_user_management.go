@@ -101,7 +101,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		return t, nil
 	}
 
-	api.GetUserHandler = operations.GetUserHandlerFunc(func(params operations.GetUserParams, principal interface{}) middleware.Responder {
+	api.GetUsersHandler = operations.GetUsersHandlerFunc(func(params operations.GetUsersParams, principal interface{}) middleware.Responder {
 		var (
 			f2a, id, voice    int64
 			username, created sql.NullString
@@ -124,21 +124,21 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		rows, err := db.Query("select id, username,created,CASE WHEN voice IS false THEN -1 ELSE 1 end as voice,CASE WHEN f2a IS NULL THEN -1 ELSE 1 end as f2a from public.user" + voiceFilter + limit + offset + ";")
 		if err != nil {
 			log.Println(err)
-			return operations.NewGetUserDefault(0)
+			return operations.NewGetUsersDefault(0)
 		}
-		var users []*operations.GetUserOKBodyItems0
+		var users []*operations.GetUsersOKBodyItems0
 		for rows.Next() {
 			if err := rows.Scan(&id, &username, &created, &voice, &f2a); err != nil {
 				log.Println(err)
-				return operations.NewGetUserDefault(0)
+				return operations.NewGetUsersDefault(0)
 			}
-			users = append(users, &operations.GetUserOKBodyItems0{Created: created.String, Voice: voice, F2a: f2a, ID: id, Username: username.String})
+			users = append(users, &operations.GetUsersOKBodyItems0{Created: created.String, Voice: voice, F2a: f2a, ID: id, Username: username.String})
 
 		}
-		return operations.NewGetUserOK().WithPayload(users)
+		return operations.NewGetUsersOK().WithPayload(users)
 	})
 
-	api.PostUserManagementHandler = operations.PostUserManagementHandlerFunc(func(params operations.PostUserManagementParams, principal interface{}) middleware.Responder {
+	api.PostUserHandler = operations.PostUserHandlerFunc(func(params operations.PostUserParams, principal interface{}) middleware.Responder {
 
 		// _, ok := principal.(*Jwt)
 		// if !ok {
@@ -151,19 +151,19 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		rows, err := db.Query("SELECT id FROM public.user WHERE username=$1", params.Body.Username)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPostUserManagementDefault(0)
+			return operations.NewPostUserDefault(0)
 		}
 		defer rows.Close()
 
 		for rows.Next() {
-			return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("user already exists")})
+			return operations.NewPostUserConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("user already exists")})
 		}
 
 		email := ""
 		if params.Body.Email != "" {
 			e, err := mail.ParseAddress(params.Body.Email)
 			if err != nil {
-				return operations.NewPostUserManagementConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("invalid email")})
+				return operations.NewPostUserConflict().WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("invalid email")})
 			}
 			email = e.Address
 		}
@@ -172,7 +172,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.Password), bcrypt.DefaultCost)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPostUserManagementDefault(0)
+			return operations.NewPostUserDefault(0)
 
 		}
 
@@ -187,10 +187,10 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		result, err := db.Exec("SELECT id FROM role WHERE id IN (" + roleV + ") ;")
 		if err != nil {
 			log.Println(err)
-			return operations.NewPostUserManagementDefault(0)
+			return operations.NewPostUserDefault(0)
 		}
 		if count, err := result.RowsAffected(); err != nil || count < int64(len(params.Body.Role)) {
-			return operations.NewPostUserManagementDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role array includes invalid id")}))
+			return operations.NewPostUserDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role array includes invalid id")}))
 		}
 
 		roles := ""
@@ -212,17 +212,17 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, params.Body.Voice, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin, params.Body.PersonID).Scan(&id)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPostUserManagementDefault(0)
+			return operations.NewPostUserDefault(0)
 		}
-		return operations.NewPostUserManagementOK().WithPayload(operations.PostUserManagementOKBody{IDProfile: &id})
+		return operations.NewPostUserOK().WithPayload(operations.PostUserOKBody{ID: &id})
 
 	})
-	api.PutUserManagementHandler = operations.PutUserManagementHandlerFunc(func(params operations.PutUserManagementParams, principal interface{}) middleware.Responder {
+	api.PutUserIDHandler = operations.PutUserIDHandlerFunc(func(params operations.PutUserIDParams, principal interface{}) middleware.Responder {
 
 		tx, err := db.Begin()
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUserManagementDefault(0)
+			return operations.NewPutUserIDDefault(0)
 		}
 
 		if params.Body.Password != "" {
@@ -230,9 +230,9 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			hashedPassword, err = bcrypt.GenerateFromPassword([]byte(params.Body.Password), bcrypt.DefaultCost)
 			if err != nil {
 				log.Println(err)
-				return operations.NewPutUserManagementDefault(0)
+				return operations.NewPutUserIDDefault(0)
 			}
-			_, err = tx.Exec("UPDATE public.user SET password=$1  WHERE id=$2;", hashedPassword, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET password=$1  WHERE id=$2;", hashedPassword, params.ID)
 
 		}
 
@@ -244,7 +244,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			default:
 				active = false
 			}
-			_, err = tx.Exec("UPDATE public.user SET active=$1  WHERE id=$2;", active, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET active=$1  WHERE id=$2;", active, params.ID)
 
 		}
 
@@ -256,15 +256,15 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			default:
 				voice = false
 			}
-			_, err = tx.Exec("UPDATE public.user SET voice=$1  WHERE id=$2;", voice, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET voice=$1  WHERE id=$2;", voice, params.ID)
 		}
 
 		if params.Body.Email != "" {
-			_, err = tx.Exec("UPDATE public.user SET email=$1  WHERE id=$2;", params.Body.Email, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET email=$1  WHERE id=$2;", params.Body.Email, params.ID)
 		}
 
 		if params.Body.PersonID > 0 {
-			_, err = tx.Exec("UPDATE public.user SET person_id=$1  WHERE id=$2;", params.Body.PersonID, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET person_id=$1  WHERE id=$2;", params.Body.PersonID, params.ID)
 		}
 
 		if params.Body.ResetPasswordNextLogin != "" {
@@ -275,18 +275,18 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			default:
 				reset = false
 			}
-			_, err = tx.Exec("UPDATE public.user SET reset_password_next_login=$1  WHERE id=$2;", reset, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET reset_password_next_login=$1  WHERE id=$2;", reset, params.ID)
 		}
 
 		if params.Body.TenantID > 0 {
-			_, err = tx.Exec("UPDATE public.user SET tenant_id=$1  WHERE id=$2;", params.Body.TenantID, params.Body.ID)
+			_, err = tx.Exec("UPDATE public.user SET tenant_id=$1  WHERE id=$2;", params.Body.TenantID, params.ID)
 		}
 
 		if len(params.Body.Role) > 0 {
-			_, err = tx.Exec("DELETE FROM user_role WHERE user_id=$1;", params.Body.ID)
+			_, err = tx.Exec("DELETE FROM user_role WHERE user_id=$1;", params.ID)
 			if err != nil {
 				log.Println(err)
-				return operations.NewPutUserManagementDefault(0)
+				return operations.NewPutUserIDDefault(0)
 			}
 
 			// check if all values in the role array include valid roles
@@ -300,15 +300,15 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			result, err := tx.Exec("SELECT id FROM role WHERE id IN (" + roleV + ") ;")
 			if err != nil {
 				log.Println(err)
-				return operations.NewPutUserManagementDefault(0)
+				return operations.NewPutUserIDDefault(0)
 			}
 			if count, err := result.RowsAffected(); err != nil || count < int64(len(params.Body.Role)) {
-				return operations.NewPutUserManagementDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role array includes invalid id")}))
+				return operations.NewPutUserIDDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role array includes invalid id")}))
 			}
 
 			roles := ""
 			for _, v := range params.Body.Role {
-				roles = roles + "(" + strconv.Itoa(int(*params.Body.ID)) + ", " + strconv.Itoa(int(v)) + "),"
+				roles = roles + "(" + strconv.Itoa(int(params.ID)) + ", " + strconv.Itoa(int(v)) + "),"
 			}
 			// remove the last comma
 			roles = roles[:len(roles)-1]
@@ -317,69 +317,69 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUserManagementDefault(0)
+			return operations.NewPutUserIDDefault(0)
 		}
 
 		err = tx.Commit()
 		if err != nil {
 			tx.Rollback()
 			log.Println(err)
-			return operations.NewPutUserManagementDefault(0)
+			return operations.NewPutUserIDDefault(0)
 		}
 
 		if params.Body.Username != "" {
 			// before updating make sure the same username doesn't already exist
-			rows, err := db.Query("SELECT id FROM public.user WHERE username=$1 AND id != $2", params.Body.Username, params.Body.ID)
+			rows, err := db.Query("SELECT id FROM public.user WHERE username=$1 AND id != $2", params.Body.Username, params.ID)
 			if err != nil {
 				log.Println(err)
-				return operations.NewPutUserManagementDefault(0)
+				return operations.NewPutUserIDDefault(0)
 			}
 			defer rows.Close()
 
 			for rows.Next() {
-				return operations.NewPutUserManagementDefault(409).WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("username  already exists")})
+				return operations.NewPutUserIDDefault(409).WithPayload(&models.Response{Code: swag.Int64(409), Message: swag.String("username  already exists")})
 			}
 
-			_, err = db.Exec("UPDATE public.user SET username=$1  WHERE id=$2;", params.Body.Username, params.Body.ID)
+			_, err = db.Exec("UPDATE public.user SET username=$1  WHERE id=$2;", params.Body.Username, params.ID)
 		}
 
-		return operations.NewPutUserManagementOK()
+		return operations.NewPutUserIDOK()
 
 	})
-	api.DeleteUserManagementHandler = operations.DeleteUserManagementHandlerFunc(func(params operations.DeleteUserManagementParams, principal interface{}) middleware.Responder {
+	api.DeleteUserIDHandler = operations.DeleteUserIDHandlerFunc(func(params operations.DeleteUserIDParams, principal interface{}) middleware.Responder {
 
-		if *params.Body.IDProfile < 1 {
-			return operations.NewDeleteUserManagementDefault(400).WithPayload(&models.Response{Code: swag.Int64(400), Message: swag.String("invalid profile id")})
+		if params.ID < 1 {
+			return operations.NewDeleteUserIDDefault(400).WithPayload(&models.Response{Code: swag.Int64(400), Message: swag.String("invalid profile id")})
 		}
 
 		tx, err := db.Begin()
 		if err != nil {
 			log.Println(err)
-			return operations.NewPostUserManagementDefault(0)
+			return operations.NewPostUserDefault(0)
 		}
 
-		_, err = tx.Exec("DELETE FROM user_role WHERE user_id=$1;", *params.Body.IDProfile)
+		_, err = tx.Exec("DELETE FROM user_role WHERE user_id=$1;", params.ID)
 		if err != nil {
 			log.Println(err)
-			return operations.NewDeleteUserManagementDefault(0)
+			return operations.NewDeleteUserIDDefault(0)
 		}
 
-		result, err := tx.Exec("DELETE FROM public.user WHERE id=$1 ;", *params.Body.IDProfile)
+		result, err := tx.Exec("DELETE FROM public.user WHERE id=$1 ;", params.ID)
 		if err != nil {
 			log.Println(err)
-			return operations.NewDeleteUserManagementDefault(0)
+			return operations.NewDeleteUserIDDefault(0)
 		}
 
 		err = tx.Commit()
 		if err != nil {
 			log.Println(err)
-			return operations.NewDeleteUserManagementDefault(0)
+			return operations.NewDeleteUserIDDefault(0)
 		}
 		if count, err := result.RowsAffected(); err != nil || count == 0 {
-			return operations.NewDeleteUserManagementDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("user with this id doesn't exist")}))
+			return operations.NewDeleteUserIDDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("user with this id doesn't exist")}))
 		}
 
-		return operations.NewDeleteUserManagementOK()
+		return operations.NewDeleteUserIDOK()
 	})
 
 	api.PostUserLoginHandler = operations.PostUserLoginHandlerFunc(func(params operations.PostUserLoginParams) middleware.Responder {
@@ -452,7 +452,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.PutUserLoginHandler = operations.PutUserLoginHandlerFunc(func(params operations.PutUserLoginParams, principal interface{}) middleware.Responder {
 		t, ok := principal.(*Jwt)
 		if !ok {
-			return operations.NewPutUserManagementDefault(0)
+			return operations.NewPutUserIDDefault(0)
 		}
 
 		var id int64
@@ -499,7 +499,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		} else {
 			personID = nil
 		}
-		return operations.NewPutUserLoginOK().WithPayload(&models.ProfileInfo{
+		return operations.NewPutUserLoginOK().WithPayload(operations.PutUserLoginOKBody{
 			Active:                 &active,
 			Created:                &created,
 			Email:                  &email.String,
@@ -514,16 +514,16 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	})
 
-	api.PostUserPasswordHandler = operations.PostUserPasswordHandlerFunc(func(params operations.PostUserPasswordParams, principal interface{}) middleware.Responder {
+	api.PostUserIDPasswordHandler = operations.PostUserIDPasswordHandlerFunc(func(params operations.PostUserIDPasswordParams, principal interface{}) middleware.Responder {
 		j, ok := principal.(*Jwt)
 		if !ok {
-			return operations.NewPostUserPasswordDefault(0)
+			return operations.NewPostUserIDPasswordDefault(0)
 		}
 
 		// TODO check if the user is trying to change his own password or has permissions to check anyones password
 		// prevents changing someone elses password
-		if false && int64(j.Id_profile) != *params.Body.IDProfile {
-			return operations.NewPostUserPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("no permission to change the password for this user")}))
+		if false && int64(j.Id_profile) != params.ID {
+			return operations.NewPostUserIDPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("no permission to change the password for this user")}))
 		}
 
 		allowed := false
@@ -532,12 +532,12 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			err := db.QueryRow("SELECT password FROM public.user WHERE id=$1", j.Id_profile).Scan(&password)
 			if err != nil {
 				log.Println(err)
-				return operations.NewPostUserPasswordDefault(0)
+				return operations.NewPostUserIDPasswordDefault(0)
 			}
 			if bcrypt.CompareHashAndPassword([]byte(password), []byte(params.Body.PasswordOld)) == nil {
 				allowed = true
 			} else {
-				return operations.NewPostUserPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("old password doesn't match")}))
+				return operations.NewPostUserIDPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("old password doesn't match")}))
 			}
 		} else {
 			allowed = true
@@ -547,46 +547,46 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			if err != nil {
 				log.Println(err)
 
-				return operations.NewPostUserPasswordDefault(0)
+				return operations.NewPostUserIDPasswordDefault(0)
 			}
-			_, err = db.Exec("UPDATE public.user SET password=$1,reset_password_next_login=true WHERE id=$2 ;", hashedPassword, params.Body.IDProfile)
+			_, err = db.Exec("UPDATE public.user SET password=$1,reset_password_next_login=true WHERE id=$2 ;", hashedPassword, params.ID)
 			if err != nil {
 				log.Println(err)
-				return operations.NewPostUserPasswordDefault(0)
+				return operations.NewPostUserIDPasswordDefault(0)
 			}
-			return operations.NewPostUserPasswordOK()
+			return operations.NewPostUserIDPasswordOK()
 
 		}
-		return operations.NewPostUserPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("don't have permission to change this user password")}))
+		return operations.NewPostUserIDPasswordUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("don't have permission to change this user password")}))
 
 	})
 
-	api.PutUserPasswordHandler = operations.PutUserPasswordHandlerFunc(func(params operations.PutUserPasswordParams) middleware.Responder {
+	api.PutUserIDPasswordHandler = operations.PutUserIDPasswordHandlerFunc(func(params operations.PutUserIDPasswordParams) middleware.Responder {
 		var tt *Jwt
 		if t, err := ParseJwt(*params.Body.Jwt); err != nil {
 			log.Println(err)
-			return operations.NewPutUserPasswordUnauthorized().WithPayload(&models.Response{Code: swag.Int64(int64(err.Code())), Message: swag.String(err.Error())})
+			return operations.NewPutUserIDPasswordUnauthorized().WithPayload(&models.Response{Code: swag.Int64(int64(err.Code())), Message: swag.String(err.Error())})
 		} else {
 			tt = t
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*params.Body.PasswordNew), bcrypt.DefaultCost)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUserPasswordDefault(0)
+			return operations.NewPutUserIDPasswordDefault(0)
 		}
 
 		_, err = db.Exec("UPDATE public.user SET password=$1,reset_password_next_login=false WHERE id=$2 ;", hashedPassword, tt.Id_profile)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUserPasswordDefault(0)
+			return operations.NewPutUserIDPasswordDefault(0)
 		}
-		return operations.NewPutUserPasswordOK()
+		return operations.NewPutUserIDPasswordOK()
 	})
 
-	api.DeleteUser2faHandler = operations.DeleteUser2faHandlerFunc(func(params operations.DeleteUser2faParams, principal interface{}) middleware.Responder {
+	api.DeleteUserIDF2aHandler = operations.DeleteUserIDF2aHandlerFunc(func(params operations.DeleteUserIDF2aParams, principal interface{}) middleware.Responder {
 		j, ok := principal.(*Jwt)
 		if !ok {
-			return operations.NewDeleteUser2faDefault(0)
+			return operations.NewDeleteUserIDF2aDefault(0)
 		}
 
 		var password string
@@ -594,72 +594,68 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 		if err != nil {
 			log.Println(err)
-			return operations.NewDeleteUser2faDefault(0)
+			return operations.NewDeleteUserIDF2aDefault(0)
 		}
-		// password ok so can disable 2fa
+		// password ok so can disable IDF2a
 		if bcrypt.CompareHashAndPassword([]byte(password), []byte(*params.Body.Password)) == nil {
-			_, err = db.Exec("UPDATE public.user SET f2a=NULL WHERE id=$1 ;", j.Id_profile)
+			_, err = db.Exec("UPDATE public.user SET f2a=NULL WHERE id=$1 ;", params.ID)
 			if err != nil {
 				log.Println(err)
-				return operations.NewDeleteUser2faDefault(0)
+				return operations.NewDeleteUserIDF2aDefault(0)
 			}
-			return operations.NewDeleteUser2faOK()
+			return operations.NewDeleteUserIDF2aOK()
 
 		}
-		return operations.NewDeleteUser2faUnauthorized()
+		return operations.NewDeleteUserIDF2aUnauthorized()
 
 	})
 
 	// qr and salt generator
-	api.GetUser2faHandler = operations.GetUser2faHandlerFunc(func(params operations.GetUser2faParams, principal interface{}) middleware.Responder {
+	api.GetUserF2aHandler = operations.GetUserF2aHandlerFunc(func(params operations.GetUserF2aParams, principal interface{}) middleware.Responder {
 		secret, err := GenSecretKey()
 		if err != nil {
 			log.Println(err)
-			return operations.NewGetUser2faDefault(0)
+			return operations.NewGetUserF2aDefault(0)
 		}
 
 		if qr, err := BarcodeImage("Choicehealth", []byte(secret)); err == nil {
-			return operations.NewGetUser2faOK().WithPayload(operations.GetUser2faOKBody{Qr: swag.String(qr), Secret: swag.String(secret)})
+			return operations.NewGetUserF2aOK().WithPayload(operations.GetUserF2aOKBody{Qr: swag.String(qr), Secret: swag.String(secret)})
 
 		} else {
 			log.Println(err)
-			return operations.NewGetUser2faDefault(0)
+			return operations.NewGetUserF2aDefault(0)
 
 		}
 	})
 
-	// Expects a valid 2fa token to verify and enable on the account
-	api.PutUser2faHandler = operations.PutUser2faHandlerFunc(func(params operations.PutUser2faParams, principal interface{}) middleware.Responder {
-		j, ok := principal.(*Jwt)
-		if !ok {
-			return operations.NewPutUser2faDefault(0)
-		}
+	// Expects a valid F2a token to verify and enable on the account
+	api.PutUserIDF2aHandler = operations.PutUserIDF2aHandlerFunc(func(params operations.PutUserIDF2aParams, principal interface{}) middleware.Responder {
 		// verify the code and if match save the master secret for the account
-		code, _, err := GetCurrent2faCode(*params.Body.Secret)
+		code, _, err := GetCurrentIDF2aCode(*params.Body.Secret)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUser2faDefault(0)
+			return operations.NewPutUserIDF2aDefault(0)
 		}
 
 		// code matches so can save the secret in the db
 		if code == *params.Body.Code {
-			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", params.Body.Secret, j.Id_profile)
+			_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", params.Body.Secret, params.ID)
 			if err != nil {
 				log.Println(err)
-				return operations.NewPutUser2faDefault(0)
+				return operations.NewPutUserIDF2aDefault(0)
 			}
-			return operations.NewPutUser2faOK()
+			return operations.NewPutUserIDF2aOK()
 		}
-		return operations.NewPutUser2faUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("mismatched 2 factor code")}))
+		return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("mismatched 2 factor code")}))
 
 	})
 
-	// authenticate against the 2fa
-	api.PostUser2faHandler = operations.PostUser2faHandlerFunc(func(params operations.PostUser2faParams) middleware.Responder {
+	// authenticate against the IDF2a
+	api.PostUserF2aHandler = operations.PostUserF2aHandlerFunc(func(params operations.PostUserF2aParams) middleware.Responder {
 		var tt *Jwt
 		if t, err := ParseJwt(*params.Body.Jwt); err != nil {
 			log.Println(err)
-			return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.Int64(int64(err.Code())), Message: swag.String(err.Error())})
+			return operations.NewPostUserF2aUnauthorized().WithPayload(&models.Response{Code: swag.Int64(int64(err.Code())), Message: swag.String(err.Error())})
 		} else {
 			tt = t
 		}
@@ -668,18 +664,18 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		err := db.QueryRow("SELECT f2a FROM public.user WHERE id=$1", tt.Id_profile).Scan(&f2a)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUser2faDefault(0)
+			return operations.NewPutUserIDF2aDefault(0)
 		}
 
-		code, _, err := GetCurrent2faCode(f2a)
+		code, _, err := GetCurrentIDF2aCode(f2a)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUser2faDefault(0)
+			return operations.NewPutUserIDF2aDefault(0)
 		}
 
 		if code == *params.Body.F2a {
 
-			// now generate a new jwt token without the 2fa lock
+			// now generate a new jwt token without the IDF2a lock
 			t := jwt.MapClaims{
 				"exp":        time.Now().Add(time.Hour * 240).Unix(),
 				"id_profile": strconv.Itoa(tt.Id_profile),
@@ -687,34 +683,34 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 			}
 			t["scope"], err = setScopes(tt.Id_profile)
 			if err != nil {
-				return operations.NewPutUser2faDefault(0)
+				return operations.NewPutUserIDF2aDefault(0)
 			}
 
 			token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
 			tt, err := token.SignedString(signKey)
 			if err != nil {
-				return operations.NewPutUser2faDefault(0)
+				return operations.NewPutUserIDF2aDefault(0)
 			}
-			return operations.NewPostUser2faOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
+			return operations.NewPostUserF2aOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 		}
-		return operations.NewPostUser2faUnauthorized().WithPayload(&models.Response{Code: swag.Int64(401), Message: swag.String("invalid 2fa token")})
+		return operations.NewPostUserF2aUnauthorized().WithPayload(&models.Response{Code: swag.Int64(401), Message: swag.String("invalid IDF2a token")})
 
 	})
 
-	api.DeleteUserRoleHandler = operations.DeleteUserRoleHandlerFunc(func(params operations.DeleteUserRoleParams, principal interface{}) middleware.Responder {
-		r, err := db.Exec("DELETE FROM role WHERE id=$1 ;", params.Body.ID)
+	api.DeleteUserRoleIDHandler = operations.DeleteUserRoleIDHandlerFunc(func(params operations.DeleteUserRoleIDParams, principal interface{}) middleware.Responder {
+		r, err := db.Exec("DELETE FROM role WHERE id=$1 ;", params.ID)
 		if err != nil {
 			log.Println(err)
-			return operations.NewDeleteUserRoleDefault(0)
+			return operations.NewDeleteUserRoleIDDefault(0)
 		}
 		if count, err := r.RowsAffected(); err != nil || count == 0 {
-			return operations.NewDeleteUserRoleDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("invalid role id")}))
+			return operations.NewDeleteUserRoleIDDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("invalid role id")}))
 
 		}
-		return operations.NewDeleteUserRoleOK()
+		return operations.NewDeleteUserRoleIDOK()
 	})
 
-	api.GetUserRoleHandler = operations.GetUserRoleHandlerFunc(func(params operations.GetUserRoleParams, principal interface{}) middleware.Responder {
+	api.GetUserRolesHandler = operations.GetUserRolesHandlerFunc(func(params operations.GetUserRolesParams, principal interface{}) middleware.Responder {
 
 		var limit string
 		if params.Limit != nil {
@@ -729,27 +725,31 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		rows, err := db.Query("select id, name, data from role" + limit + offset + ";")
 		if err != nil {
 			log.Println(err)
-			return operations.NewGetUserRoleDefault(0)
+			return operations.NewGetUserRolesDefault(0)
 		}
-		var roles []*models.UserRole
+		var roles []*operations.GetUserRolesOKBodyItems0
 		for rows.Next() {
 			var (
 				id         int64
-				name, data string
+				name, data sql.NullString
 			)
 			if err := rows.Scan(&id, &name, &data); err != nil {
 				log.Println(err)
-				return operations.NewGetUserRoleDefault(0)
+				return operations.NewGetUserRolesDefault(0)
 			}
-			roles = append(roles, &models.UserRole{ID: &id, Name: &name, Data: &data})
+			roles = append(roles, &operations.GetUserRolesOKBodyItems0{ID: id, Name: name.String, Data: data.String})
 		}
 
-		return operations.NewGetUserRoleOK().WithPayload(roles)
+		return operations.NewGetUserRolesOK().WithPayload(roles)
 	})
 
 	api.PostUserRoleHandler = operations.PostUserRoleHandlerFunc(func(params operations.PostUserRoleParams, principal interface{}) middleware.Responder {
 		var id int64
-		err := db.QueryRow("INSERT INTO role (name,data)	VALUES ($1)	RETURNING id", *params.Body.Name, *params.Body.Data).Scan(&id)
+		var js json.RawMessage
+		if err := json.Unmarshal([]byte(*params.Body.Data), &js); err != nil {
+			return operations.NewPostUserRoleDefault(400).WithPayload((&models.Response{Code: swag.Int64(400), Message: swag.String("invalid json for the data field")}))
+		}
+		err := db.QueryRow("INSERT INTO role (name,data)	VALUES ($1,$2)	RETURNING id", *params.Body.Name, *params.Body.Data).Scan(&id)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPostUserRoleDefault(0)
@@ -757,16 +757,20 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		return operations.NewPostUserRoleOK().WithPayload(operations.PostUserRoleOKBody{ID: &id})
 	})
 
-	api.PutUserRoleHandler = operations.PutUserRoleHandlerFunc(func(params operations.PutUserRoleParams, principal interface{}) middleware.Responder {
-		result, err := db.Exec("UPDATE role SET name=$1,data=$2 WHERE id=$3 ;", params.Body.Name, params.Body.Data, params.Body.ID)
+	api.PutUserRoleIDHandler = operations.PutUserRoleIDHandlerFunc(func(params operations.PutUserRoleIDParams, principal interface{}) middleware.Responder {
+		var js json.RawMessage
+		if err := json.Unmarshal([]byte(*params.Body.Data), &js); err != nil {
+			return operations.NewPutUserRoleIDDefault(400).WithPayload((&models.Response{Code: swag.Int64(400), Message: swag.String("invalid json for the data field")}))
+		}
+		result, err := db.Exec("UPDATE role SET name=$1,data=$2 WHERE id=$3 ;", params.Body.Name, params.Body.Data, params.ID)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUserRoleDefault(0)
+			return operations.NewPutUserRoleIDDefault(0)
 		}
 		if count, err := result.RowsAffected(); err != nil || count == 0 {
-			return operations.NewPutUserRoleDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role id not found")}))
+			return operations.NewPutUserRoleIDDefault(404).WithPayload((&models.Response{Code: swag.Int64(404), Message: swag.String("role id not found")}))
 		}
-		return operations.NewPutUserRoleOK()
+		return operations.NewPutUserRoleIDOK()
 	})
 
 	api.ServerShutdown = func() {}
@@ -870,7 +874,7 @@ func getTs() int64 {
 	return int64(math.Floor(un))
 }
 
-func GetCurrent2faCode(secretKey string) (string, int64, error) {
+func GetCurrentIDF2aCode(secretKey string) (string, int64, error) {
 	now := time.Now().Unix()
 	interval := 30
 	t_chunk := (now / int64(interval))

@@ -30,7 +30,469 @@ func init() {
   },
   "basePath": "/v1/",
   "paths": {
-    "/user": {
+    "/user/": {
+      "post": {
+        "summary": "creates a new user",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "id of the created user.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "409": {
+            "$ref": "#/responses/UserExistsError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/f2a": {
+      "get": {
+        "summary": "generates a qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app",
+        "responses": {
+          "200": {
+            "description": "The  2fa qr image needed to be scanned by the google authenticator app. The secrets needs to be passed back to the 2fa enabling api",
+            "schema": {
+              "properties": {
+                "qr": {
+                  "type": "string"
+                },
+                "secret": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "post": {
+        "summary": "used when the account is with 2 factor authentication enabled. use the login endpoint first to get the initial jwt token and than use this endpoint to get the second jwt token after providing a valid google authenticator code",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/F2aAuth"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the new jwt token that can be used for all endpoints.",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "put": {
+        "summary": "verify and parse a login token and return all user info",
+        "responses": {
+          "200": {
+            "description": "the user info associated with this token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "active": {
+                  "type": "boolean"
+                },
+                "created": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "f2a": {
+                  "type": "boolean"
+                },
+                "id": {
+                  "type": "integer"
+                },
+                "person_id": {
+                  "type": "integer",
+                  "x-nullable": true
+                },
+                "reset_password_next_login": {
+                  "type": "boolean"
+                },
+                "tenant_id": {
+                  "type": "integer"
+                },
+                "username": {
+                  "type": "string"
+                },
+                "voice": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "post": {
+        "summary": "generates a swt token to use for authentication",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Login"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A jwt token to use for authentication.",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "201": {
+            "description": "Password change is required, hit the password reset endpoint with the generated jwt token",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "206": {
+            "description": "Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/role": {
+      "post": {
+        "summary": "creates a new role",
+        "parameters": [
+          {
+            "description": "the id field here is not used so you can put any number to pass the validation",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the id of the created role.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/role/{id}": {
+      "put": {
+        "summary": "updates a role",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserRole"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "deletes a role",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "integer",
+          "description": "id of the user role",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/user/roles": {
+      "get": {
+        "summary": "generates a list of all user roles",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "The number of items to skip before starting to collect the result set",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "The numbers of items to return",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "full roles list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "data": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "put": {
+        "summary": "updates an existing user, only submited fields will be updated so can ommit the ones that don't need updating",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ProfileUpdate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "deletes a user from the db",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "integer",
+          "description": "id of the user.",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/user/{id}/f2a": {
+      "put": {
+        "summary": "enables 2fa on an account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/F2aEnable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "disable 2 factor authenticaiton for an account.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/F2aDisable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "2 factor disabled."
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "integer",
+          "description": "id of the user.",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/user/{id}/password": {
+      "put": {
+        "summary": "resets an user password using a temporary password provided by an admin, once reset you can login as normal using the new password",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PassResetTemp"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "post": {
+        "summary": "reset an user password, when old password is not provided the user will be required to change its password upon next login using a temporary password provided by an admin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PassReset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DefaultOk"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedError"
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "integer",
+          "description": "id of the user",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/users": {
       "get": {
         "summary": "generates a list of users",
         "parameters": [
@@ -84,409 +546,6 @@ func init() {
           }
         }
       }
-    },
-    "/user/2fa": {
-      "get": {
-        "summary": "generate qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app",
-        "responses": {
-          "200": {
-            "description": "A 2fa object.",
-            "schema": {
-              "properties": {
-                "qr": {
-                  "type": "string"
-                },
-                "secret": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "put": {
-        "summary": "enables 2fa on an account",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/F2aEnable"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "2fa enabled."
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "post": {
-        "summary": "used when the account is with 2 factor authentication enabled. use the login endpoint first to get the initial jwt token and than use this endpoint to get the second jwt token after providing a valid google authenticator code",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/F2aAuth"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "the new jwt token that can be used for all endpoints.",
-            "schema": {
-              "$ref": "#/definitions/Jwt"
-            }
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "delete": {
-        "summary": "disable 2 factor authenticaiton for an account",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/F2aDisable"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "2fa disabled."
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      }
-    },
-    "/user/login": {
-      "put": {
-        "summary": "verify and parse a login token and return all user info",
-        "responses": {
-          "200": {
-            "description": "the user info associated with this token",
-            "schema": {
-              "$ref": "#/definitions/ProfileInfo"
-            }
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "post": {
-        "summary": "generates a swt token to use for authentication",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/Login"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A jwt token to use for authentication.",
-            "schema": {
-              "$ref": "#/definitions/Jwt"
-            }
-          },
-          "201": {
-            "description": "Password change is required, hit the password reset endpoint with the generated jwt token",
-            "schema": {
-              "$ref": "#/definitions/Jwt"
-            }
-          },
-          "206": {
-            "description": "Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.",
-            "schema": {
-              "$ref": "#/definitions/Jwt"
-            }
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      }
-    },
-    "/user/management": {
-      "put": {
-        "summary": "updates an existing user, only submited fields will be updated so can ommit the ones that don't need updating",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ProfileUpdate"
-            }
-          }
-        ],
-        "responses": {
-          "200": {},
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "post": {
-        "summary": "creates a new user",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/Profile"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "An user id of the created user.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id_profile": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "409": {
-            "$ref": "#/responses/UserExistsError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "delete": {
-        "summary": "deletes a user from the db",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "required": [
-                "id_profile"
-              ],
-              "properties": {
-                "id_profile": {
-                  "type": "integer"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "user deleted"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      }
-    },
-    "/user/password": {
-      "put": {
-        "summary": "resets an user password using a temporary password provided by an admin, once reset you can login as normal using the new password",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PassResetTemp"
-            }
-          }
-        ],
-        "responses": {
-          "200": {},
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "post": {
-        "summary": "reset an user password, when old password is not provided the user will be required to change its password upon next login using a temporary password provided by an admin",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/PassReset"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "user updated"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      }
-    },
-    "/user/role": {
-      "get": {
-        "summary": "generates a list of all user roles",
-        "parameters": [
-          {
-            "type": "integer",
-            "description": "The number of items to skip before starting to collect the result set",
-            "name": "offset",
-            "in": "query"
-          },
-          {
-            "type": "integer",
-            "description": "The numbers of items to return",
-            "name": "limit",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "full roles list",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/UserRole"
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "put": {
-        "summary": "updates a role",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/UserRole"
-            }
-          }
-        ],
-        "responses": {
-          "200": {},
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "post": {
-        "summary": "creates a new role",
-        "parameters": [
-          {
-            "description": "the id field here is not used so you can put any number to pass the validation",
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/UserRole"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "the id of the created role.",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      },
-      "delete": {
-        "summary": "deletes a role",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "required": [
-                "id"
-              ],
-              "properties": {
-                "id": {
-                  "type": "integer"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "role deleted"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
-          "default": {
-            "$ref": "#/responses/DefaultError"
-          }
-        }
-      }
     }
   },
   "definitions": {
@@ -502,7 +561,7 @@ func init() {
           "type": "string"
         },
         "jwt": {
-          "description": "the jwt token accuired form the initial login",
+          "description": "the jwt token accuired from the initial login",
           "type": "string"
         }
       }
@@ -526,13 +585,15 @@ func init() {
       ],
       "properties": {
         "code": {
-          "description": "the 2 factor code generted by the android app after scanning the barcode",
           "type": "string"
         },
         "secret": {
-          "description": "the master password which will be used to for decoding",
           "type": "string"
         }
+      },
+      "example": {
+        "code": "the 2 factor code generted by the android app after scanning the barcode",
+        "password": "the master password returned with the generated qr barcode by the api"
       }
     },
     "Jwt": {
@@ -568,13 +629,9 @@ func init() {
     "PassReset": {
       "type": "object",
       "required": [
-        "id_profile",
         "password_new"
       ],
       "properties": {
-        "id_profile": {
-          "type": "integer"
-        },
         "password_new": {
           "type": "string"
         },
@@ -658,58 +715,8 @@ func init() {
         "voice": true
       }
     },
-    "ProfileInfo": {
-      "type": "object",
-      "required": [
-        "id",
-        "username",
-        "tenant_id",
-        "active",
-        "created",
-        "reset_password_next_login",
-        "voice",
-        "email",
-        "f2a"
-      ],
-      "properties": {
-        "active": {
-          "type": "boolean"
-        },
-        "created": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "f2a": {
-          "type": "boolean"
-        },
-        "id": {
-          "type": "integer"
-        },
-        "person_id": {
-          "type": "integer",
-          "x-nullable": true
-        },
-        "reset_password_next_login": {
-          "type": "boolean"
-        },
-        "tenant_id": {
-          "type": "integer"
-        },
-        "username": {
-          "type": "string"
-        },
-        "voice": {
-          "type": "boolean"
-        }
-      }
-    },
     "ProfileUpdate": {
       "type": "object",
-      "required": [
-        "id"
-      ],
       "properties": {
         "active": {
           "type": "string",
@@ -720,9 +727,6 @@ func init() {
         },
         "email": {
           "type": "string"
-        },
-        "id": {
-          "type": "integer"
         },
         "password": {
           "type": "string"
@@ -760,7 +764,6 @@ func init() {
       "example": {
         "active": "true",
         "email": "admin@mail.com",
-        "id": 1,
         "password": "password",
         "person_id": 1,
         "reset_password_next_login": "false",
@@ -796,25 +799,31 @@ func init() {
       "type": "object",
       "required": [
         "name",
-        "id",
         "data"
       ],
       "properties": {
         "data": {
           "type": "string"
         },
-        "id": {
-          "type": "integer"
-        },
         "name": {
           "type": "string"
         }
+      },
+      "example": {
+        "name": "admin",
+        "password": "{\"active\": true}"
       }
     }
   },
   "responses": {
     "DefaultError": {
       "description": "Generic Error used for most error responses - it returns a custom code and message depending on the reply context",
+      "schema": {
+        "$ref": "#/definitions/Response"
+      }
+    },
+    "DefaultOk": {
+      "description": "Generic Ok Response - it returns a custom code and message depending on the reply context",
       "schema": {
         "$ref": "#/definitions/Response"
       }

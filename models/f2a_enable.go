@@ -18,11 +18,11 @@ import (
 
 type F2aEnable struct {
 
-	// the 2 factor code generted by the android app after scanning the barcode
+	// code
 	// Required: true
 	Code *string `json:"code"`
 
-	// the master password which will be used to for decoding
+	// secret
 	// Required: true
 	Secret *string `json:"secret"`
 }

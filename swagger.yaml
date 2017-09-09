@@ -13,7 +13,7 @@ security:
   - jwt: []
 
 paths:
-  /user:
+  /users:
     get:
       summary: generates a list of users
       parameters:
@@ -56,7 +56,29 @@ paths:
           200:
             description: the user info associated with this token
             schema:
-              $ref: "#/definitions/ProfileInfo"
+              type: object
+              properties:
+                id:
+                  type: integer
+                username:
+                  type: string
+                tenant_id:
+                  type: integer
+                active:
+                  type: boolean
+                created:
+                  type: string
+                reset_password_next_login:
+                  type: boolean
+                voice:
+                  type: boolean
+                person_id:
+                  type: integer
+                  x-nullable: true
+                email:
+                  type: string
+                f2a:
+                  type: boolean
           default:
             $ref: "#/responses/DefaultError"
     post:
@@ -83,9 +105,15 @@ paths:
             $ref: "#/definitions/Jwt"
         default:
           $ref: "#/responses/DefaultError"
-  /user/2fa:
+  /user/{id}/f2a:
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: id of the user.
     delete:
-      summary: disable 2 factor authenticaiton for an account
+      summary: disable 2 factor authenticaiton for an account. 
       parameters:
         - in: body
           name: body
@@ -94,22 +122,7 @@ paths:
               "#/definitions/F2aDisable"
       responses:
         200:
-          description: 2fa disabled.
-        401:
-          $ref: "#/responses/UnauthorizedError"
-        default:
-          $ref: "#/responses/DefaultError"
-    get:
-      summary: generate qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app
-      responses:
-        200:
-          description: A 2fa object.
-          schema:
-            properties:
-              qr:
-                type: string
-              secret:
-                type: string
+          description: 2 factor disabled.
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
@@ -123,11 +136,29 @@ paths:
             $ref: "#/definitions/F2aEnable"
       responses:
         200:
-          description: 2fa enabled.
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
+  /user/f2a:
+    get:
+      summary: generates a qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app
+      responses:
+        200:
+          description: The  2fa qr image needed to be scanned by the google authenticator app. 
+                      The secrets needs to be passed back to the 2fa enabling api
+          schema:
+            properties:
+              qr:
+                type: string
+              secret:
+                type: string
+        401:
+          $ref: "#/responses/UnauthorizedError"
+        default:
+          $ref: "#/responses/DefaultError"
+    
     post:
       summary: used when the account is with 2 factor authentication enabled. use the login endpoint first to get the initial jwt token and than use this endpoint to get the second jwt token after providing a valid google authenticator code
       security: []
@@ -145,7 +176,7 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
-  /user/management:
+  /user/:
     post:
       summary: creates a new user
       parameters:
@@ -155,11 +186,11 @@ paths:
             $ref: "#/definitions/Profile"
       responses:
         200:
-          description: An user id of the created user.
+          description: id of the created user.
           schema:
             type: object
             properties:
-              id_profile:
+              id:
                 type: integer
         401:
           $ref: "#/responses/UnauthorizedError"
@@ -167,6 +198,13 @@ paths:
           $ref: "#/responses/UserExistsError"
         default:
           $ref: "#/responses/DefaultError"
+  /user/{id}:
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: id of the user.
     put:
       summary: updates an existing user, only submited fields will be updated so can ommit the ones that don't need updating
       parameters:
@@ -176,31 +214,28 @@ paths:
             $ref: "#/definitions/ProfileUpdate"
       responses:
         200:
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
     delete:
       summary: deletes a user from the db
-      parameters:
-        - in: body
-          name: body
-          schema:
-            type: object
-            required:
-            - id_profile
-            properties:
-              id_profile:
-                type: integer
       responses:
         200:
-          description: user deleted
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
 
-  /user/password:
+  /user/{id}/password:
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: id of the user
     post:
       summary: reset an user password, when old password is not provided the user will be required to change its password upon next login using a temporary password provided by an admin
       parameters:
@@ -210,7 +245,7 @@ paths:
             $ref: "#/definitions/PassReset"
       responses:
         200:
-          description: "user updated"
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
@@ -225,11 +260,12 @@ paths:
             $ref: "#/definitions/PassResetTemp"
       responses:
         200:
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
-  /user/role:
+  /user/roles:
     get:
       summary: generates a list of all user roles
       parameters:
@@ -247,11 +283,18 @@ paths:
           schema:
             type: array
             items:
-              $ref: "#/definitions/UserRole"
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                data:
+                  type: string
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
+  /user/role:
     post:
       summary: creates a new role
       parameters:
@@ -272,6 +315,13 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
+  /user/role/{id}:
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: id of the user role
     put:
       summary: updates a role
       parameters:
@@ -281,25 +331,16 @@ paths:
             $ref: "#/definitions/UserRole"
       responses:
         200:
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
     delete:
       summary: deletes a role
-      parameters:
-        - in: body
-          name: body
-          schema:
-            type: object
-            required:
-            - id
-            properties:
-              id:
-                type: integer
       responses:
         200:
-          description: role deleted
+          $ref: "#/responses/DefaultOk"
         401:
           $ref: "#/responses/UnauthorizedError"
         default:
@@ -315,6 +356,10 @@ responses:
       $ref: "#/definitions/Response"
   DefaultError:
     description: Generic Error used for most error responses - it returns a custom code and message depending on the reply context
+    schema:
+      $ref: "#/definitions/Response"
+  DefaultOk:
+    description: Generic Ok Response - it returns a custom code and message depending on the reply context
     schema:
       $ref: "#/definitions/Response"
 definitions:
@@ -333,18 +378,15 @@ definitions:
       properties:
         jwt:
           type: string
-          description: the jwt token accuired form the initial login
+          description: the jwt token accuired from the initial login
         f2a:
           type: string
           description: the  2 factor time code accuired from the google authenticator app
   PassReset:
       type: object
       required:
-      - "id_profile"
       - "password_new"
       properties:
-        id_profile:
-          type: integer
         password_old:
           type: string
         password_new:
@@ -376,10 +418,11 @@ definitions:
       properties:
         code:
           type: string
-          description: the 2 factor code generted by the android app after scanning the barcode
         secret:
           type: string
-          description: the master password which will be used to for decoding
+      example:
+            code: "the 2 factor code generted by the android app after scanning the barcode"
+            password: "the master password returned with the generated qr barcode by the api"
   Login:
       type: object
       required:
@@ -438,11 +481,7 @@ definitions:
               - 2
   ProfileUpdate:
     type: object
-    required:
-      - id
     properties:
-      id:
-        type: integer
       username:
         type: string
       reset_password_next_login:
@@ -450,7 +489,6 @@ definitions:
         enum:
           - "true"
           - "false"
-
       password:
         type: string
       active:
@@ -474,7 +512,6 @@ definitions:
       person_id:
         type: integer
     example:
-          id: 1
           username: "username"
           email: "admin@mail.com"
           password: "password"
@@ -485,55 +522,20 @@ definitions:
           person_id: 1
           role:
             - 1
-            - 2
-  ProfileInfo:
-      type: object
-      required:
-        - id
-        - username
-        - tenant_id
-        - active
-        - created
-        - reset_password_next_login
-        - voice
-        - email
-        - f2a
-      properties:
-        id:
-          type: integer
-        username:
-          type: string
-        tenant_id:
-          type: integer
-        active:
-          type: boolean
-        created:
-          type: string
-        reset_password_next_login:
-          type: boolean
-        voice:
-          type: boolean
-        person_id:
-          type: integer
-          x-nullable: true
-        email:
-          type: string
-        f2a:
-          type: boolean
-      
+            - 2      
   UserRole:
       type: object
       required:
         - name
-        - id
         - data
       properties:
-        id:
-          type: integer
         name:
           type: string
         data:
           type: string
+      example:
+          name: "admin"
+          password: "{\"active\": true}"
   Response:
     type: object
     properties:
