@@ -592,7 +592,7 @@ func init() {
         }
       },
       "example": {
-        "code": "the 2 factor code generted by the android app after scanning the barcode",
+        "code": "the code generted by the 2 factor google android app after scanning the qr barcode",
         "password": "the master password returned with the generated qr barcode by the api"
       }
     },
