@@ -1,0 +1,56 @@
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/dgrijalva/jwt-go"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/errors"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/loads"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/runtime"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/spec"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/strfmt"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/swag"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/go-openapi/validate"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/jessevdk/go-flags"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/lib/pq"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/qpliu/qrencode-go"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/rs/cors"
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/tylerb/graceful"
+
+[[dependencies]]
+  branch = "master"
+  name = "golang.org/x/crypto"

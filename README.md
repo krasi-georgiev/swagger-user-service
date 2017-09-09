@@ -12,4 +12,3 @@ setup proper permissions check for all endpoints and improve the pass reset hand
 testing
 global refactoring
 limit api access by IP
-vendor packages
