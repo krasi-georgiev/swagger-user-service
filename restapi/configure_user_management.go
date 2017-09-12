@@ -90,7 +90,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 
 	api.GetUserF2aHandler = operations.GetUserF2aHandlerFunc(handlers.F2aGenerator)
 
-	api.PutUserIDF2aHandler = operations.PutUserIDF2aHandlerFunc(handlers.F2aEnable)
+	api.PostUserIDF2aHandler = operations.PostUserIDF2aHandlerFunc(handlers.F2aEnable)
 
 	api.PostUserF2aHandler = operations.PostUserF2aHandlerFunc(handlers.F2aAuthenticate)
 

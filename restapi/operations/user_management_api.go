@@ -59,6 +59,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		PostUserF2aHandler: PostUserF2aHandlerFunc(func(params PostUserF2aParams) middleware.Responder {
 			return middleware.NotImplemented("operation PostUserF2a has not yet been implemented")
 		}),
+		PostUserIDF2aHandler: PostUserIDF2aHandlerFunc(func(params PostUserIDF2aParams) middleware.Responder {
+			return middleware.NotImplemented("operation PostUserIDF2a has not yet been implemented")
+		}),
 		PostUserIDPasswordHandler: PostUserIDPasswordHandlerFunc(func(params PostUserIDPasswordParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PostUserIDPassword has not yet been implemented")
 		}),
@@ -70,9 +73,6 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		}),
 		PutUserIDHandler: PutUserIDHandlerFunc(func(params PutUserIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserID has not yet been implemented")
-		}),
-		PutUserIDF2aHandler: PutUserIDF2aHandlerFunc(func(params PutUserIDF2aParams) middleware.Responder {
-			return middleware.NotImplemented("operation PutUserIDF2a has not yet been implemented")
 		}),
 		PutUserIDPasswordHandler: PutUserIDPasswordHandlerFunc(func(params PutUserIDPasswordParams) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserIDPassword has not yet been implemented")
@@ -143,6 +143,8 @@ type UserManagementAPI struct {
 	PostUserHandler PostUserHandler
 	// PostUserF2aHandler sets the operation handler for the post user f2a operation
 	PostUserF2aHandler PostUserF2aHandler
+	// PostUserIDF2aHandler sets the operation handler for the post user ID f2a operation
+	PostUserIDF2aHandler PostUserIDF2aHandler
 	// PostUserIDPasswordHandler sets the operation handler for the post user ID password operation
 	PostUserIDPasswordHandler PostUserIDPasswordHandler
 	// PostUserLoginHandler sets the operation handler for the post user login operation
@@ -151,8 +153,6 @@ type UserManagementAPI struct {
 	PostUserRoleHandler PostUserRoleHandler
 	// PutUserIDHandler sets the operation handler for the put user ID operation
 	PutUserIDHandler PutUserIDHandler
-	// PutUserIDF2aHandler sets the operation handler for the put user ID f2a operation
-	PutUserIDF2aHandler PutUserIDF2aHandler
 	// PutUserIDPasswordHandler sets the operation handler for the put user ID password operation
 	PutUserIDPasswordHandler PutUserIDPasswordHandler
 	// PutUserLoginHandler sets the operation handler for the put user login operation
@@ -258,6 +258,10 @@ func (o *UserManagementAPI) Validate() error {
 		unregistered = append(unregistered, "PostUserF2aHandler")
 	}
 
+	if o.PostUserIDF2aHandler == nil {
+		unregistered = append(unregistered, "PostUserIDF2aHandler")
+	}
+
 	if o.PostUserIDPasswordHandler == nil {
 		unregistered = append(unregistered, "PostUserIDPasswordHandler")
 	}
@@ -272,10 +276,6 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.PutUserIDHandler == nil {
 		unregistered = append(unregistered, "PutUserIDHandler")
-	}
-
-	if o.PutUserIDF2aHandler == nil {
-		unregistered = append(unregistered, "PutUserIDF2aHandler")
 	}
 
 	if o.PutUserIDPasswordHandler == nil {
@@ -433,6 +433,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/user/{id}/f2a"] = NewPostUserIDF2a(o.context, o.PostUserIDF2aHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/user/{id}/password"] = NewPostUserIDPassword(o.context, o.PostUserIDPasswordHandler)
 
 	if o.handlers["POST"] == nil {
@@ -449,11 +454,6 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/user/{id}"] = NewPutUserID(o.context, o.PutUserIDHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/user/{id}/f2a"] = NewPutUserIDF2a(o.context, o.PutUserIDF2aHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

@@ -131,7 +131,7 @@ paths:
           $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
-    put:
+    post:
       summary: enables 2fa on an account
       security: [] #we do additinal check in the function as otherwise can't implement the f2 enabling enforcment
       parameters:

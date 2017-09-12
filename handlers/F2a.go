@@ -71,7 +71,7 @@ func F2aGenerator(params operations.GetUserF2aParams) middleware.Responder {
 }
 
 //F2aEnable Expects a valid F2a token to verify and enable on the account
-func F2aEnable(params operations.PutUserIDF2aParams) middleware.Responder {
+func F2aEnable(params operations.PostUserIDF2aParams) middleware.Responder {
 	// just check that the jwt token is valid
 	if v, ok := params.HTTPRequest.Header["X-Jwt"]; ok {
 		_, err := ParseJwt(strings.Join(v, ""))

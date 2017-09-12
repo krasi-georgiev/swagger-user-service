@@ -361,7 +361,7 @@ func init() {
       ]
     },
     "/user/{id}/f2a": {
-      "put": {
+      "post": {
         "summary": "enables 2fa on an account",
         "parameters": [
           {
