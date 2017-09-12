@@ -55,49 +55,6 @@ func (o *PostUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
 
 }
 
-// PostUserUnauthorizedCode is the HTTP code returned for type PostUserUnauthorized
-const PostUserUnauthorizedCode int = 401
-
-/*PostUserUnauthorized Authentication is missing or invalid
-
-swagger:response postUserUnauthorized
-*/
-type PostUserUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPostUserUnauthorized creates PostUserUnauthorized with default headers values
-func NewPostUserUnauthorized() *PostUserUnauthorized {
-	return &PostUserUnauthorized{}
-}
-
-// WithPayload adds the payload to the post user unauthorized response
-func (o *PostUserUnauthorized) WithPayload(payload *models.Response) *PostUserUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the post user unauthorized response
-func (o *PostUserUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PostUserUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // PostUserConflictCode is the HTTP code returned for type PostUserConflict
 const PostUserConflictCode int = 409
 

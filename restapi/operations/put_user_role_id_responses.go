@@ -56,49 +56,6 @@ func (o *PutUserRoleIDOK) WriteResponse(rw http.ResponseWriter, producer runtime
 	}
 }
 
-// PutUserRoleIDUnauthorizedCode is the HTTP code returned for type PutUserRoleIDUnauthorized
-const PutUserRoleIDUnauthorizedCode int = 401
-
-/*PutUserRoleIDUnauthorized Authentication is missing or invalid
-
-swagger:response putUserRoleIdUnauthorized
-*/
-type PutUserRoleIDUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPutUserRoleIDUnauthorized creates PutUserRoleIDUnauthorized with default headers values
-func NewPutUserRoleIDUnauthorized() *PutUserRoleIDUnauthorized {
-	return &PutUserRoleIDUnauthorized{}
-}
-
-// WithPayload adds the payload to the put user role Id unauthorized response
-func (o *PutUserRoleIDUnauthorized) WithPayload(payload *models.Response) *PutUserRoleIDUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put user role Id unauthorized response
-func (o *PutUserRoleIDUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PutUserRoleIDUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*PutUserRoleIDDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response putUserRoleIdDefault

@@ -103,6 +103,10 @@ paths:
           description: Password change is required, hit the password reset endpoint with the generated jwt token
           schema:
             $ref: "#/definitions/Jwt"
+        202:
+          description: Account is with 2fa enforcing so need to enable the 2fa
+          schema:
+            $ref: "#/definitions/Jwt"
         default:
           $ref: "#/responses/DefaultError"
   /user/{id}/f2a:
@@ -129,6 +133,7 @@ paths:
           $ref: "#/responses/DefaultError"
     put:
       summary: enables 2fa on an account
+      security: [] #we do additinal check in the function as otherwise can't implement the f2 enabling enforcment
       parameters:
         - in: body
           name: body
@@ -144,6 +149,7 @@ paths:
   /user/f2a:
     get:
       summary: generates a qr base64 encoded image and master code for the user to scan with the google authenticator and add it to the phone app
+      security: []
       responses:
         200:
           description: The  2fa qr image needed to be scanned by the google authenticator app. 
@@ -154,8 +160,6 @@ paths:
                 type: string
               secret:
                 type: string
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
     
@@ -192,8 +196,6 @@ paths:
             properties:
               id:
                 type: integer
-        401:
-          $ref: "#/responses/UnauthorizedError"
         409:
           $ref: "#/responses/UserExistsError"
         default:
@@ -215,8 +217,6 @@ paths:
       responses:
         200:
           $ref: "#/responses/DefaultOk"
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
     delete:
@@ -224,8 +224,6 @@ paths:
       responses:
         200:
           $ref: "#/responses/DefaultOk"
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
 
@@ -290,8 +288,6 @@ paths:
                   type: string
                 data:
                   type: string
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
   /user/role:
@@ -311,8 +307,6 @@ paths:
             properties:
               id :
                 type: integer
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
   /user/role/{id}:
@@ -332,8 +326,6 @@ paths:
       responses:
         200:
           $ref: "#/responses/DefaultOk"
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
     delete:
@@ -341,8 +333,6 @@ paths:
       responses:
         200:
           $ref: "#/responses/DefaultOk"
-        401:
-          $ref: "#/responses/UnauthorizedError"
         default:
           $ref: "#/responses/DefaultError"
 responses:
@@ -422,7 +412,7 @@ definitions:
           type: string
       example:
             code: "the code generted by the 2 factor google android app after scanning the qr barcode"
-            password: "the master password returned with the generated qr barcode by the api"
+            secret: "the master secret returned with the generated qr barcode by the api"
   Login:
       type: object
       required:
@@ -467,12 +457,15 @@ definitions:
           x-nullable: true
         voice:
           type: boolean
+        f2a_enforced:
+          type: boolean
       example:
             username: "username"
             email: "admin@mail.com"
             password: "password"
             active: true
             voice: true
+            f2a_enforced: false
             reset_password_next_login: false
             tenant_id: 1
             person_id: 1
@@ -485,6 +478,11 @@ definitions:
       username:
         type: string
       reset_password_next_login:
+        type: string
+        enum:
+          - "true"
+          - "false"
+      f2a_enforce:
         type: string
         enum:
           - "true"
@@ -518,6 +516,7 @@ definitions:
           reset_password_next_login: "false"
           active: "true"
           voice: "true"
+          f2a_enforce: "true"
           tenant_id: 1
           person_id: 1
           role:

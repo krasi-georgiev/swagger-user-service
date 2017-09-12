@@ -56,49 +56,6 @@ func (o *PutUserIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 }
 
-// PutUserIDUnauthorizedCode is the HTTP code returned for type PutUserIDUnauthorized
-const PutUserIDUnauthorizedCode int = 401
-
-/*PutUserIDUnauthorized Authentication is missing or invalid
-
-swagger:response putUserIdUnauthorized
-*/
-type PutUserIDUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPutUserIDUnauthorized creates PutUserIDUnauthorized with default headers values
-func NewPutUserIDUnauthorized() *PutUserIDUnauthorized {
-	return &PutUserIDUnauthorized{}
-}
-
-// WithPayload adds the payload to the put user Id unauthorized response
-func (o *PutUserIDUnauthorized) WithPayload(payload *models.Response) *PutUserIDUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put user Id unauthorized response
-func (o *PutUserIDUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PutUserIDUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*PutUserIDDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response putUserIdDefault

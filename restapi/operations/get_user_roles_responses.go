@@ -59,49 +59,6 @@ func (o *GetUserRolesOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 
 }
 
-// GetUserRolesUnauthorizedCode is the HTTP code returned for type GetUserRolesUnauthorized
-const GetUserRolesUnauthorizedCode int = 401
-
-/*GetUserRolesUnauthorized Authentication is missing or invalid
-
-swagger:response getUserRolesUnauthorized
-*/
-type GetUserRolesUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewGetUserRolesUnauthorized creates GetUserRolesUnauthorized with default headers values
-func NewGetUserRolesUnauthorized() *GetUserRolesUnauthorized {
-	return &GetUserRolesUnauthorized{}
-}
-
-// WithPayload adds the payload to the get user roles unauthorized response
-func (o *GetUserRolesUnauthorized) WithPayload(payload *models.Response) *GetUserRolesUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the get user roles unauthorized response
-func (o *GetUserRolesUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *GetUserRolesUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*GetUserRolesDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response getUserRolesDefault

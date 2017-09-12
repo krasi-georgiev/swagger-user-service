@@ -54,9 +54,6 @@ func init() {
               }
             }
           },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
           "409": {
             "$ref": "#/responses/UserExistsError"
           },
@@ -82,9 +79,6 @@ func init() {
                 }
               }
             }
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -190,6 +184,12 @@ func init() {
               "$ref": "#/definitions/Jwt"
             }
           },
+          "202": {
+            "description": "Account is with 2fa enforcing so need to enable the 2fa",
+            "schema": {
+              "$ref": "#/definitions/Jwt"
+            }
+          },
           "206": {
             "description": "Account is with 2 factor authenticaiton so use the 2 factor endpoint to generate the final the jwt token.",
             "schema": {
@@ -227,9 +227,6 @@ func init() {
               }
             }
           },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }
@@ -252,9 +249,6 @@ func init() {
           "200": {
             "$ref": "#/responses/DefaultOk"
           },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }
@@ -265,9 +259,6 @@ func init() {
         "responses": {
           "200": {
             "$ref": "#/responses/DefaultOk"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -321,9 +312,6 @@ func init() {
               }
             }
           },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }
@@ -346,9 +334,6 @@ func init() {
           "200": {
             "$ref": "#/responses/DefaultOk"
           },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
-          },
           "default": {
             "$ref": "#/responses/DefaultError"
           }
@@ -359,9 +344,6 @@ func init() {
         "responses": {
           "200": {
             "$ref": "#/responses/DefaultOk"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedError"
           },
           "default": {
             "$ref": "#/responses/DefaultError"
@@ -593,7 +575,7 @@ func init() {
       },
       "example": {
         "code": "the code generted by the 2 factor google android app after scanning the qr barcode",
-        "password": "the master password returned with the generated qr barcode by the api"
+        "secret": "the master secret returned with the generated qr barcode by the api"
       }
     },
     "Jwt": {
@@ -674,6 +656,9 @@ func init() {
         "email": {
           "type": "string"
         },
+        "f2a_enforced": {
+          "type": "boolean"
+        },
         "password": {
           "type": "string"
         },
@@ -703,6 +688,7 @@ func init() {
       "example": {
         "active": true,
         "email": "admin@mail.com",
+        "f2a_enforced": false,
         "password": "password",
         "person_id": 1,
         "reset_password_next_login": false,
@@ -727,6 +713,13 @@ func init() {
         },
         "email": {
           "type": "string"
+        },
+        "f2a_enforce": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
         },
         "password": {
           "type": "string"
@@ -764,6 +757,7 @@ func init() {
       "example": {
         "active": "true",
         "email": "admin@mail.com",
+        "f2a_enforce": "true",
         "password": "password",
         "person_id": 1,
         "reset_password_next_login": "false",

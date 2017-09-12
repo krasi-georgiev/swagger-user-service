@@ -44,7 +44,7 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		DeleteUserRoleIDHandler: DeleteUserRoleIDHandlerFunc(func(params DeleteUserRoleIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation DeleteUserRoleID has not yet been implemented")
 		}),
-		GetUserF2aHandler: GetUserF2aHandlerFunc(func(params GetUserF2aParams, principal interface{}) middleware.Responder {
+		GetUserF2aHandler: GetUserF2aHandlerFunc(func(params GetUserF2aParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetUserF2a has not yet been implemented")
 		}),
 		GetUserRolesHandler: GetUserRolesHandlerFunc(func(params GetUserRolesParams, principal interface{}) middleware.Responder {
@@ -71,7 +71,7 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		PutUserIDHandler: PutUserIDHandlerFunc(func(params PutUserIDParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserID has not yet been implemented")
 		}),
-		PutUserIDF2aHandler: PutUserIDF2aHandlerFunc(func(params PutUserIDF2aParams, principal interface{}) middleware.Responder {
+		PutUserIDF2aHandler: PutUserIDF2aHandlerFunc(func(params PutUserIDF2aParams) middleware.Responder {
 			return middleware.NotImplemented("operation PutUserIDF2a has not yet been implemented")
 		}),
 		PutUserIDPasswordHandler: PutUserIDPasswordHandlerFunc(func(params PutUserIDPasswordParams) middleware.Responder {

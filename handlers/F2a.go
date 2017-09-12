@@ -14,6 +14,7 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -53,7 +54,7 @@ func F2aDisable(params operations.DeleteUserIDF2aParams, principal interface{}) 
 
 }
 
-func F2aGenerator(params operations.GetUserF2aParams, principal interface{}) middleware.Responder {
+func F2aGenerator(params operations.GetUserF2aParams) middleware.Responder {
 	secret, err := genSecretKey()
 	if err != nil {
 		log.Println(err)
@@ -63,15 +64,24 @@ func F2aGenerator(params operations.GetUserF2aParams, principal interface{}) mid
 	if qr, err := barcodeImage("Choicehealth", []byte(secret)); err == nil {
 		return operations.NewGetUserF2aOK().WithPayload(operations.GetUserF2aOKBody{Qr: swag.String(qr), Secret: swag.String(secret)})
 
-	} else {
-		log.Println(err)
-		return operations.NewGetUserF2aDefault(0)
-
 	}
+
+	log.Println(err)
+	return operations.NewGetUserF2aDefault(0)
 }
 
 //F2aEnable Expects a valid F2a token to verify and enable on the account
-func F2aEnable(params operations.PutUserIDF2aParams, principal interface{}) middleware.Responder {
+func F2aEnable(params operations.PutUserIDF2aParams) middleware.Responder {
+	// just check that the jwt token is valid
+	if v, ok := params.HTTPRequest.Header["X-Jwt"]; ok {
+		_, err := ParseJwt(strings.Join(v, ""))
+		if err != nil {
+			return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("invalid login token")}))
+		}
+	} else {
+		return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("invalid login token")}))
+	}
+
 	// verify the code and if match save the master secret for the account
 	code, _, err := getCurrentIDF2aCode(*params.Body.Secret)
 	if err != nil {
@@ -81,12 +91,12 @@ func F2aEnable(params operations.PutUserIDF2aParams, principal interface{}) midd
 
 	// code matches so can save the secret in the db
 	if code == *params.Body.Code {
-		_, err = db.Exec("UPDATE public.user SET f2a=$1 WHERE id=$2 ;", params.Body.Secret, params.ID)
+		_, err = db.Exec("UPDATE public.user SET f2a=$1,f2a_enforced=false WHERE id=$2 ;", params.Body.Secret, params.ID)
 		if err != nil {
 			log.Println(err)
 			return operations.NewPutUserIDF2aDefault(0)
 		}
-		return operations.NewPutUserIDF2aOK()
+		return operations.NewPutUserIDF2aOK().WithPayload((&models.Response{Code: swag.Int64(200), Message: swag.String("2 factor enabled. Please logout and login again.")}))
 	}
 	return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("mismatched 2 factor code")}))
 

@@ -25,6 +25,9 @@ type Profile struct {
 	// email
 	Email string `json:"email,omitempty"`
 
+	// f2a enforced
+	F2aEnforced bool `json:"f2a_enforced,omitempty"`
+
 	// password
 	// Required: true
 	Password *string `json:"password"`
@@ -55,6 +58,8 @@ type Profile struct {
 /* polymorph Profile active false */
 
 /* polymorph Profile email false */
+
+/* polymorph Profile f2a_enforced false */
 
 /* polymorph Profile password false */
 

@@ -55,6 +55,18 @@ func UserUpdate(params operations.PutUserIDParams, principal interface{}) middle
 		_, err = tx.Exec("UPDATE public.user SET voice=$1  WHERE id=$2;", voice, params.ID)
 	}
 
+	if params.Body.F2aEnforce != "" {
+		var F2aEnforce bool
+		switch params.Body.F2aEnforce {
+		case "true":
+			F2aEnforce = true
+		default:
+			F2aEnforce = false
+		}
+		_, err = tx.Exec("UPDATE public.user SET f2a_enforced=$1  WHERE id=$2;", F2aEnforce, params.ID)
+		_, err = tx.Exec("UPDATE public.user SET f2a=NULL  WHERE id=$1;", params.ID)
+	}
+
 	if params.Body.Email != "" {
 		_, err = tx.Exec("UPDATE public.user SET email=$1  WHERE id=$2;", params.Body.Email, params.ID)
 	}

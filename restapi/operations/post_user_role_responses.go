@@ -55,49 +55,6 @@ func (o *PostUserRoleOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 
 }
 
-// PostUserRoleUnauthorizedCode is the HTTP code returned for type PostUserRoleUnauthorized
-const PostUserRoleUnauthorizedCode int = 401
-
-/*PostUserRoleUnauthorized Authentication is missing or invalid
-
-swagger:response postUserRoleUnauthorized
-*/
-type PostUserRoleUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewPostUserRoleUnauthorized creates PostUserRoleUnauthorized with default headers values
-func NewPostUserRoleUnauthorized() *PostUserRoleUnauthorized {
-	return &PostUserRoleUnauthorized{}
-}
-
-// WithPayload adds the payload to the post user role unauthorized response
-func (o *PostUserRoleUnauthorized) WithPayload(payload *models.Response) *PostUserRoleUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the post user role unauthorized response
-func (o *PostUserRoleUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PostUserRoleUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*PostUserRoleDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response postUserRoleDefault

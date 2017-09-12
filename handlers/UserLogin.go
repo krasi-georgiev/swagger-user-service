@@ -16,7 +16,7 @@ import (
 
 // UserLogin is the endpoint used for authenticating and  generating a jwt token.
 func UserLogin(params operations.PostUserLoginParams) middleware.Responder {
-	rows, err := db.Query("SELECT id,password,active,reset_password_next_login,f2a FROM public.user WHERE username=$1", params.Body.Username)
+	rows, err := db.Query("SELECT id,password,active,reset_password_next_login,f2a,f2a_enforced FROM public.user WHERE username=$1", params.Body.Username)
 
 	if err != nil {
 		log.Println(err)
@@ -29,10 +29,11 @@ func UserLogin(params operations.PostUserLoginParams) middleware.Responder {
 	var active sql.NullBool
 	var reset_password_next_login sql.NullBool
 	var f2a sql.NullString
+	var f2a_enforced sql.NullBool
 
 	for rows.Next() {
 
-		if err := rows.Scan(&id, &password, &active, &reset_password_next_login, &f2a); err != nil {
+		if err := rows.Scan(&id, &password, &active, &reset_password_next_login, &f2a, &f2a_enforced); err != nil {
 			log.Println(err)
 			return operations.NewPostUserLoginDefault(0)
 		}
@@ -55,8 +56,11 @@ func UserLogin(params operations.PostUserLoginParams) middleware.Responder {
 			if f2a.Valid { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
 				t["f2a"] = true
 			}
-			if reset_password_next_login.Bool { // user has f2a enabled so need an extra token verificaiton using the f2a endpoint
+			if reset_password_next_login.Bool { // user is required to change their password
 				t["reset_password_next_login"] = true
+			}
+			if f2a_enforced.Bool { // user is required to enable 2fa
+				t["f2a_enforced"] = true
 			}
 
 			token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
@@ -67,8 +71,11 @@ func UserLogin(params operations.PostUserLoginParams) middleware.Responder {
 			if f2a.Valid {
 				return operations.NewPostUserLoginPartialContent().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 			}
-			if reset_password_next_login.Bool {
+			if reset_password_next_login.Bool { // returns only a temporary jwt token that will need extra unlocking
 				return operations.NewPostUserLoginCreated().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
+			}
+			if f2a_enforced.Bool { // returns only a temporary jwt token that will need extra unlocking
+				return operations.NewPostUserLoginAccepted().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 			}
 			return operations.NewPostUserLoginOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 		}

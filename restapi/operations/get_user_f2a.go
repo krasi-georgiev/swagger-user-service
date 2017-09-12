@@ -16,16 +16,16 @@ import (
 )
 
 // GetUserF2aHandlerFunc turns a function with the right signature into a get user f2a handler
-type GetUserF2aHandlerFunc func(GetUserF2aParams, interface{}) middleware.Responder
+type GetUserF2aHandlerFunc func(GetUserF2aParams) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetUserF2aHandlerFunc) Handle(params GetUserF2aParams, principal interface{}) middleware.Responder {
-	return fn(params, principal)
+func (fn GetUserF2aHandlerFunc) Handle(params GetUserF2aParams) middleware.Responder {
+	return fn(params)
 }
 
 // GetUserF2aHandler interface for that can handle valid get user f2a params
 type GetUserF2aHandler interface {
-	Handle(GetUserF2aParams, interface{}) middleware.Responder
+	Handle(GetUserF2aParams) middleware.Responder
 }
 
 // NewGetUserF2a creates a new http.Handler for the get user f2a operation
@@ -50,25 +50,12 @@ func (o *GetUserF2a) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var Params = NewGetUserF2aParams()
 
-	uprinc, aCtx, err := o.Context.Authorize(r, route)
-	if err != nil {
-		o.Context.Respond(rw, r, route.Produces, route, err)
-		return
-	}
-	if aCtx != nil {
-		r = aCtx
-	}
-	var principal interface{}
-	if uprinc != nil {
-		principal = uprinc
-	}
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params, principal) // actually handle the request
+	res := o.Handler.Handle(Params) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

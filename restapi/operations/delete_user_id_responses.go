@@ -56,49 +56,6 @@ func (o *DeleteUserIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 	}
 }
 
-// DeleteUserIDUnauthorizedCode is the HTTP code returned for type DeleteUserIDUnauthorized
-const DeleteUserIDUnauthorizedCode int = 401
-
-/*DeleteUserIDUnauthorized Authentication is missing or invalid
-
-swagger:response deleteUserIdUnauthorized
-*/
-type DeleteUserIDUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewDeleteUserIDUnauthorized creates DeleteUserIDUnauthorized with default headers values
-func NewDeleteUserIDUnauthorized() *DeleteUserIDUnauthorized {
-	return &DeleteUserIDUnauthorized{}
-}
-
-// WithPayload adds the payload to the delete user Id unauthorized response
-func (o *DeleteUserIDUnauthorized) WithPayload(payload *models.Response) *DeleteUserIDUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the delete user Id unauthorized response
-func (o *DeleteUserIDUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *DeleteUserIDUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*DeleteUserIDDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response deleteUserIdDefault

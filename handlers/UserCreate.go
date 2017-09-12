@@ -78,15 +78,15 @@ func UserCreate(params operations.PostUserParams, principal interface{}) middlew
 	roles = roles[:len(roles)-1]
 	query := `
 			WITH profileInsert as (
-				INSERT INTO public.user (username,email,active,voice, password,tenant_id,created,reset_password_next_login,person_id)
-				VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)	RETURNING id),
+				INSERT INTO public.user (username,email,active,voice, password,tenant_id,created,reset_password_next_login,person_id,f2a_enforced)
+				VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)	RETURNING id),
 				insertProfileRole as (
 					INSERT INTO user_role (user_id,role_id)
 					VALUES ` + roles + `
 					)
 				SELECT * FROM profileInsert`
 
-	err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, params.Body.Voice, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin, params.Body.PersonID).Scan(&id)
+	err = db.QueryRow(query, *params.Body.Username, email, params.Body.Active, params.Body.Voice, hashedPassword, params.Body.TenantID, time.Now(), params.Body.ResetPasswordNextLogin, params.Body.PersonID, params.Body.F2aEnforced).Scan(&id)
 	if err != nil {
 		log.Println(err)
 		return operations.NewPostUserDefault(0)

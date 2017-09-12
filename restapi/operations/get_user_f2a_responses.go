@@ -55,49 +55,6 @@ func (o *GetUserF2aOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 
 }
 
-// GetUserF2aUnauthorizedCode is the HTTP code returned for type GetUserF2aUnauthorized
-const GetUserF2aUnauthorizedCode int = 401
-
-/*GetUserF2aUnauthorized Authentication is missing or invalid
-
-swagger:response getUserF2aUnauthorized
-*/
-type GetUserF2aUnauthorized struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Response `json:"body,omitempty"`
-}
-
-// NewGetUserF2aUnauthorized creates GetUserF2aUnauthorized with default headers values
-func NewGetUserF2aUnauthorized() *GetUserF2aUnauthorized {
-	return &GetUserF2aUnauthorized{}
-}
-
-// WithPayload adds the payload to the get user f2a unauthorized response
-func (o *GetUserF2aUnauthorized) WithPayload(payload *models.Response) *GetUserF2aUnauthorized {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the get user f2a unauthorized response
-func (o *GetUserF2aUnauthorized) SetPayload(payload *models.Response) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *GetUserF2aUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(401)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 /*GetUserF2aDefault Generic Error used for most error responses - it returns a custom code and message depending on the reply context
 
 swagger:response getUserF2aDefault

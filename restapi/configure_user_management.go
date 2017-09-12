@@ -15,8 +15,6 @@ import (
 
 	"github.com/vanderbr/choicehealth_user-service/handlers"
 	"github.com/vanderbr/choicehealth_user-service/restapi/operations"
-
-	_ "github.com/lib/pq"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
@@ -64,6 +62,9 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 		}
 		if t.RequirePassReset {
 			return nil, errors.New(401, "account requires a password change so hit the pass reset endpoint using the provided  temporary password")
+		}
+		if t.RequireF2Enable {
+			return nil, errors.New(401, "account requires a 2 factor authentication so hit the 2fa enabling  endpoint")
 		}
 
 		return t, nil

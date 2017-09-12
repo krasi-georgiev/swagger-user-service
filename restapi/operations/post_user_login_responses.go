@@ -99,6 +99,49 @@ func (o *PostUserLoginCreated) WriteResponse(rw http.ResponseWriter, producer ru
 	}
 }
 
+// PostUserLoginAcceptedCode is the HTTP code returned for type PostUserLoginAccepted
+const PostUserLoginAcceptedCode int = 202
+
+/*PostUserLoginAccepted Account is with 2fa enforcing so need to enable the 2fa
+
+swagger:response postUserLoginAccepted
+*/
+type PostUserLoginAccepted struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Jwt `json:"body,omitempty"`
+}
+
+// NewPostUserLoginAccepted creates PostUserLoginAccepted with default headers values
+func NewPostUserLoginAccepted() *PostUserLoginAccepted {
+	return &PostUserLoginAccepted{}
+}
+
+// WithPayload adds the payload to the post user login accepted response
+func (o *PostUserLoginAccepted) WithPayload(payload *models.Jwt) *PostUserLoginAccepted {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post user login accepted response
+func (o *PostUserLoginAccepted) SetPayload(payload *models.Jwt) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostUserLoginAccepted) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(202)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PostUserLoginPartialContentCode is the HTTP code returned for type PostUserLoginPartialContent
 const PostUserLoginPartialContentCode int = 206
 

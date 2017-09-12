@@ -154,6 +154,7 @@ type Jwt struct {
 	Id_profile, User_type_id int
 	F2a                      bool
 	RequirePassReset         bool
+	RequireF2Enable          bool
 	Scope                    scope
 }
 
@@ -205,23 +206,15 @@ func ParseJwt(token string) (*Jwt, errors.Error) {
 		log.Println("parsing user id error:", err)
 		return nil, errors.New(500, "system error")
 	}
-	// if user_type_id, err := strconv.Atoi(t.Claims.(jwt.MapClaims)["user_type_id"].(string)); err == nil {
-	// 	j.User_type_id = user_type_id
-	// } else {
-	// 	log.Println("parsing user type error:", err)
-	// 	return nil, errors.New(500, "system error")
-	// }
-	// if scope, ok := t.Claims.(jwt.MapClaims)["scope"].(string); ok {
-	// 	j.Scope = strings.Split(scope, ",")
-	// } else {
-	// 	log.Println("parsing user scopes error:", err)
-	// 	return nil, errors.New(500, "system error")
-	// }
+
 	if s, ok := t.Claims.(jwt.MapClaims)["f2a"].(bool); ok && s {
 		j.F2a = true
 	}
 	if s, ok := t.Claims.(jwt.MapClaims)["reset_password_next_login"].(bool); ok && s {
 		j.RequirePassReset = true
+	}
+	if s, ok := t.Claims.(jwt.MapClaims)["f2a_enforced"].(bool); ok && s {
+		j.RequireF2Enable = true
 	}
 
 	return j, nil
