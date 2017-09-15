@@ -11,40 +11,40 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 )
 
-// GetUserIDF2aHandlerFunc turns a function with the right signature into a get user ID f2a handler
-type GetUserIDF2aHandlerFunc func(GetUserIDF2aParams, interface{}) middleware.Responder
+// GetUserIDHandlerFunc turns a function with the right signature into a get user ID handler
+type GetUserIDHandlerFunc func(GetUserIDParams, interface{}) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetUserIDF2aHandlerFunc) Handle(params GetUserIDF2aParams, principal interface{}) middleware.Responder {
+func (fn GetUserIDHandlerFunc) Handle(params GetUserIDParams, principal interface{}) middleware.Responder {
 	return fn(params, principal)
 }
 
-// GetUserIDF2aHandler interface for that can handle valid get user ID f2a params
-type GetUserIDF2aHandler interface {
-	Handle(GetUserIDF2aParams, interface{}) middleware.Responder
+// GetUserIDHandler interface for that can handle valid get user ID params
+type GetUserIDHandler interface {
+	Handle(GetUserIDParams, interface{}) middleware.Responder
 }
 
-// NewGetUserIDF2a creates a new http.Handler for the get user ID f2a operation
-func NewGetUserIDF2a(ctx *middleware.Context, handler GetUserIDF2aHandler) *GetUserIDF2a {
-	return &GetUserIDF2a{Context: ctx, Handler: handler}
+// NewGetUserID creates a new http.Handler for the get user ID operation
+func NewGetUserID(ctx *middleware.Context, handler GetUserIDHandler) *GetUserID {
+	return &GetUserID{Context: ctx, Handler: handler}
 }
 
-/*GetUserIDF2a swagger:route GET /user/{id}/f2a getUserIdF2a
+/*GetUserID swagger:route GET /user/{id} getUserId
 
-enable enforcment to use 2fa on an account
+Gets a profile by ID.
 
 */
-type GetUserIDF2a struct {
+type GetUserID struct {
 	Context *middleware.Context
-	Handler GetUserIDF2aHandler
+	Handler GetUserIDHandler
 }
 
-func (o *GetUserIDF2a) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *GetUserID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewGetUserIDF2aParams()
+	var Params = NewGetUserIDParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {

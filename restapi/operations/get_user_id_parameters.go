@@ -9,35 +9,28 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
-
-	"github.com/vanderbr/choicehealth_user-service/models"
 )
 
-// NewPutUserIDF2aParams creates a new PutUserIDF2aParams object
+// NewGetUserIDParams creates a new GetUserIDParams object
 // with the default values initialized.
-func NewPutUserIDF2aParams() PutUserIDF2aParams {
+func NewGetUserIDParams() GetUserIDParams {
 	var ()
-	return PutUserIDF2aParams{}
+	return GetUserIDParams{}
 }
 
-// PutUserIDF2aParams contains all the bound params for the put user ID f2a operation
+// GetUserIDParams contains all the bound params for the get user ID operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PutUserIDF2a
-type PutUserIDF2aParams struct {
+// swagger:parameters GetUserID
+type GetUserIDParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request
 
-	/*
-	  In: body
-	*/
-	Body *models.F2aEnable
 	/*id of the user.
 	  Required: true
 	  In: path
@@ -47,26 +40,9 @@ type PutUserIDF2aParams struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *PutUserIDF2aParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *GetUserIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
-
-	if runtime.HasBody(r) {
-		defer r.Body.Close()
-		var body models.F2aEnable
-		if err := route.Consumer.Consume(r.Body, &body); err != nil {
-			res = append(res, errors.NewParseError("body", "body", "", err))
-		} else {
-			if err := body.Validate(route.Formats); err != nil {
-				res = append(res, err)
-			}
-
-			if len(res) == 0 {
-				o.Body = &body
-			}
-		}
-
-	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
@@ -79,7 +55,7 @@ func (o *PutUserIDF2aParams) BindRequest(r *http.Request, route *middleware.Matc
 	return nil
 }
 
-func (o *PutUserIDF2aParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *GetUserIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]

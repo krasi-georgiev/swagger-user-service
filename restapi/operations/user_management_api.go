@@ -47,6 +47,9 @@ func NewUserManagementAPI(spec *loads.Document) *UserManagementAPI {
 		GetUserF2aHandler: GetUserF2aHandlerFunc(func(params GetUserF2aParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetUserF2a has not yet been implemented")
 		}),
+		GetUserIDHandler: GetUserIDHandlerFunc(func(params GetUserIDParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation GetUserID has not yet been implemented")
+		}),
 		GetUserRolesHandler: GetUserRolesHandlerFunc(func(params GetUserRolesParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation GetUserRoles has not yet been implemented")
 		}),
@@ -135,6 +138,8 @@ type UserManagementAPI struct {
 	DeleteUserRoleIDHandler DeleteUserRoleIDHandler
 	// GetUserF2aHandler sets the operation handler for the get user f2a operation
 	GetUserF2aHandler GetUserF2aHandler
+	// GetUserIDHandler sets the operation handler for the get user ID operation
+	GetUserIDHandler GetUserIDHandler
 	// GetUserRolesHandler sets the operation handler for the get user roles operation
 	GetUserRolesHandler GetUserRolesHandler
 	// GetUsersHandler sets the operation handler for the get users operation
@@ -240,6 +245,10 @@ func (o *UserManagementAPI) Validate() error {
 
 	if o.GetUserF2aHandler == nil {
 		unregistered = append(unregistered, "GetUserF2aHandler")
+	}
+
+	if o.GetUserIDHandler == nil {
+		unregistered = append(unregistered, "GetUserIDHandler")
 	}
 
 	if o.GetUserRolesHandler == nil {
@@ -409,6 +418,11 @@ func (o *UserManagementAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/user/f2a"] = NewGetUserF2a(o.context, o.GetUserF2aHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/user/{id}"] = NewGetUserID(o.context, o.GetUserIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

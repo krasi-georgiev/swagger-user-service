@@ -319,6 +319,20 @@ func init() {
       }
     },
     "/user/{id}": {
+      "get": {
+        "summary": "Gets a profile by ID.",
+        "responses": {
+          "200": {
+            "description": "user item",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/DefaultError"
+          }
+        }
+      },
       "put": {
         "summary": "updates an existing user, only submited fields will be updated so can ommit the ones that don't need updating",
         "parameters": [

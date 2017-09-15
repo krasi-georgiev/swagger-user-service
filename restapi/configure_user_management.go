@@ -73,6 +73,7 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.GetUsersHandler = operations.GetUsersHandlerFunc(handlers.UserList)
 
 	api.PostUserHandler = operations.PostUserHandlerFunc(handlers.UserCreate)
+	api.GetUserIDHandler = operations.GetUserIDHandlerFunc(handlers.UserDetails)
 
 	api.PutUserIDHandler = operations.PutUserIDHandlerFunc(handlers.UserUpdate)
 
@@ -95,11 +96,8 @@ func configureAPI(api *operations.UserManagementAPI) http.Handler {
 	api.PostUserF2aHandler = operations.PostUserF2aHandlerFunc(handlers.F2aAuthenticate)
 
 	api.DeleteUserRoleIDHandler = operations.DeleteUserRoleIDHandlerFunc(handlers.RoleDelete)
-
 	api.GetUserRolesHandler = operations.GetUserRolesHandlerFunc(handlers.Roles)
-
 	api.PostUserRoleHandler = operations.PostUserRoleHandlerFunc(handlers.RoleCreate)
-
 	api.PutUserRoleIDHandler = operations.PutUserRoleIDHandlerFunc(handlers.RoleUpdate)
 
 	api.ServerShutdown = func() {}

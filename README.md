@@ -10,5 +10,5 @@ TODO:
 setup proper permissions check for all endpoints and improve the pass reset handling
 
 testing
-global refactoring
+
 limit api access by IP

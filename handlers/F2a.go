@@ -76,17 +76,17 @@ func F2aEnable(params operations.PostUserIDF2aParams) middleware.Responder {
 	if v, ok := params.HTTPRequest.Header["X-Jwt"]; ok {
 		_, err := ParseJwt(strings.Join(v, ""))
 		if err != nil {
-			return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("invalid login token")}))
+			return operations.NewPostUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("invalid login token")}))
 		}
 	} else {
-		return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("invalid login token")}))
+		return operations.NewPostUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("invalid login token")}))
 	}
 
 	// verify the code and if match save the master secret for the account
 	code, _, err := getCurrentIDF2aCode(*params.Body.Secret)
 	if err != nil {
 		log.Println(err)
-		return operations.NewPutUserIDF2aDefault(0)
+		return operations.NewPostUserIDF2aDefault(0)
 	}
 
 	// code matches so can save the secret in the db
@@ -94,11 +94,11 @@ func F2aEnable(params operations.PostUserIDF2aParams) middleware.Responder {
 		_, err = db.Exec("UPDATE public.user SET f2a=$1,f2a_enforced=false WHERE id=$2 ;", params.Body.Secret, params.ID)
 		if err != nil {
 			log.Println(err)
-			return operations.NewPutUserIDF2aDefault(0)
+			return operations.NewPostUserIDF2aDefault(0)
 		}
-		return operations.NewPutUserIDF2aOK().WithPayload((&models.Response{Code: swag.Int64(200), Message: swag.String("2 factor enabled. Please logout and login again.")}))
+		return operations.NewPostUserIDF2aOK().WithPayload((&models.Response{Code: swag.Int64(200), Message: swag.String("2 factor enabled. Please logout and login again.")}))
 	}
-	return operations.NewPutUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("mismatched 2 factor code")}))
+	return operations.NewPostUserIDF2aUnauthorized().WithPayload((&models.Response{Code: swag.Int64(401), Message: swag.String("mismatched 2 factor code")}))
 
 }
 
@@ -116,13 +116,13 @@ func F2aAuthenticate(params operations.PostUserF2aParams) middleware.Responder {
 	err := db.QueryRow("SELECT f2a FROM public.user WHERE id=$1", tt.Id_profile).Scan(&f2a)
 	if err != nil {
 		log.Println(err)
-		return operations.NewPutUserIDF2aDefault(0)
+		return operations.NewPostUserIDF2aDefault(0)
 	}
 
 	code, _, err := getCurrentIDF2aCode(f2a)
 	if err != nil {
 		log.Println(err)
-		return operations.NewPutUserIDF2aDefault(0)
+		return operations.NewPostUserIDF2aDefault(0)
 	}
 
 	if code == *params.Body.F2a {
@@ -135,13 +135,13 @@ func F2aAuthenticate(params operations.PostUserF2aParams) middleware.Responder {
 		}
 		t["scope"], err = setScopes(tt.Id_profile)
 		if err != nil {
-			return operations.NewPutUserIDF2aDefault(0)
+			return operations.NewPostUserIDF2aDefault(0)
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodRS256, t)
 		tt, err := token.SignedString(SignKey)
 		if err != nil {
-			return operations.NewPutUserIDF2aDefault(0)
+			return operations.NewPostUserIDF2aDefault(0)
 		}
 		return operations.NewPostUserF2aOK().WithPayload(&models.Jwt{Jwt: swag.String(tt)})
 	}
