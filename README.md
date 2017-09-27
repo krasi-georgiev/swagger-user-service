@@ -1,14 +1,27 @@
-[Preview the Swagger Spec](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/vanderbr/choicehealth_user-service/master/swagger.yaml)
+### REST Api based on go-swagger - returns json data for front end use.
 
-rm -Rf /tmp/app.rsa*
-openssl genrsa -out /tmp/app.rsa
-openssl rsa -in /tmp/app.rsa -pubout > /tmp/app.rsa.pub
+autnentication is jwt token based with optional  2 factor google authenticator<br/>
+## [Live Preview](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/krasi-georgiev/swagger-user-service/master/swagger.yaml)
+
+
+Generate pub/priv key for the jwt token generating and validaitng
+```
+rm -Rf /root/.ssh/user-service.rsa*
+openssl genrsa -out /root/.ssh/user-service.rsa
+openssl rsa -in /root/.ssh/user-service.rsa -pubout > /root/.ssh/user-service.rsa.pub
+```
+
+Install the go-swagger generator
+<br/>`go get -u github.com/go-swagger/go-swagger/cmd/swagger`
+
+Generate
+<br/>`swagger generate server ./swagger.yaml`
+
+Start
+<br/>`DB_HOST=0.0.0.0 DB_PASS=pass DB_USER=user go run cmd/user-management-server --port=80 --host=0.0.0.0 --pub=/root/.ssh/user-service.rsa.pub --priv=/root/.ssh/user-service.rsa`
 
 
 TODO:
-
-setup proper permissions check for all endpoints and improve the pass reset handling
-
-testing
-
-limit api access by IP
+- [ ] throttle ip
+- [ ] setup proper role based permissions
+- [ ] testing
