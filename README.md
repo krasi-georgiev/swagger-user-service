@@ -1,6 +1,7 @@
 ### REST Api based on go-swagger - returns json data for front end use.
 
 autnentication is jwt token based with optional  2 factor google authenticator<br/>
+postgresql as a storage backend<br/>
 ## [Live Preview](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/krasi-georgiev/swagger-user-service/master/swagger.yaml)
 
 
